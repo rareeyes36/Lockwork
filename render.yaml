@@ -1,0 +1,28 @@
+# Render Blueprint: one free web service + one free Postgres.
+# Deploy: Render dashboard → New → Blueprint → pick this repo → Apply.
+# On first boot the server runs migrations/ and seeds the demo company.
+services:
+  - type: web
+    name: lockwork
+    runtime: node
+    plan: free
+    buildCommand: npm ci --prefix server
+    startCommand: node server/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lockwork-db
+          property: connectionString
+      # Set to "off" to hide the "Reset demo data" button once real data matters.
+      - key: DEMO_RESET
+        value: "on"
+
+databases:
+  - name: lockwork-db
+    plan: free
+    databaseName: lockwork
+    user: lockwork
+    ipAllowList: [] # private network only; the web service connects internally

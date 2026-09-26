@@ -1,0 +1,24 @@
+{
+  "name": "lockwork",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Lockwork: lock the payout, ship the work, hire the winner. Express + Postgres demo.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "migrate": "node migrate.js",
+    "seed": "node seed.js",
+    "test": "node --test test/*.test.js",
+    "demo": "node scripts/demo.js",
+    "demo:curl": "bash scripts/demo.sh"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  }
+}

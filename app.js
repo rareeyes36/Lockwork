@@ -17,7 +17,13 @@ const app = express();
 app.use('/api', (req, res, next) => {
   ready().then(() => next(), (e) => {
     console.error('startup failed', e);
-    res.status(503).json({ error: 'Database not ready. Is DATABASE_URL set?', detail: e.message });
+    const { FOUND_DATABASE_URL } = require('./server/db');
+    res.status(503).json({
+      error: FOUND_DATABASE_URL
+        ? 'Database is connected but not reachable yet. Try again in a moment.'
+        : 'No database connected. In Vercel: Storage → Create Database → Neon → Connect to this project, then Redeploy.',
+      detail: e.message,
+    });
   });
 });
 app.use(api);

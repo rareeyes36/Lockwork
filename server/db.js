@@ -6,10 +6,18 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true
 require('dotenv').config({ path: path.join(__dirname, '.env'), quiet: true });
 
 // Vercel + Neon sets DATABASE_URL (older Vercel Postgres used POSTGRES_URL).
-const DATABASE_URL =
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL ||
-  'postgresql://contest:contest_local_dev@127.0.0.1:5432/contest_os';
+// Vercel's storage integrations can add a custom prefix (e.g. STORAGE_DATABASE_URL),
+// so fall back to any *DATABASE_URL / *POSTGRES_URL that holds a postgres:// URL.
+function findDatabaseUrl(env) {
+  if (env.DATABASE_URL) return env.DATABASE_URL;
+  if (env.POSTGRES_URL) return env.POSTGRES_URL;
+  const key = Object.keys(env)
+    .filter((k) => /(^|_)(DATABASE_URL|POSTGRES_URL)$/.test(k) && /^postgres(ql)?:\/\//.test(env[k]))
+    .sort((a, b) => a.length - b.length)[0];
+  return key ? env[key] : null;
+}
+const FOUND_DATABASE_URL = findDatabaseUrl(process.env);
+const DATABASE_URL = FOUND_DATABASE_URL || 'postgresql://contest:contest_local_dev@127.0.0.1:5432/contest_os';
 
 // External hosted Postgres (Render external URL, Neon, …) needs TLS. Local dev
 // and private-network hosts (Render's internal URL uses a dotless hostname) don't.
@@ -49,4 +57,4 @@ class HttpError extends Error {
   }
 }
 
-module.exports = { pool, tx, HttpError, DATABASE_URL };
+module.exports = { pool, tx, HttpError, DATABASE_URL, FOUND_DATABASE_URL, findDatabaseUrl };

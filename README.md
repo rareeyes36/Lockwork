@@ -10,7 +10,7 @@ This repo is a working demo: Express + Postgres, with a single-page UI that has 
 |---|---|
 | **Backend** | Node 20+, Express 5, Postgres 14+ (`server/`) |
 | **Schema** | 20 numbered migrations (`migrations/`), applied automatically on boot |
-| **UI** | Plain HTML/CSS/JS modules with no build step (`server/public/`) |
+| **UI** | Plain HTML/CSS/JS modules with no build step (`public/`) |
 | **Payments** | Both rails are **simulated**: custodial card/USD, and USDC on Base (fake tx hashes, clearly labeled) |
 | **Auth** | Demo stand-in: a "Viewing as" picker sends `X-Lockwork-As`, and the server enforces permissions for that person |
 
@@ -21,14 +21,13 @@ This repo is a working demo: Express + Postgres, with a single-page UI that has 
 createdb contest_os    # or set DATABASE_URL in server/.env
 
 # 2. Server: migrates and seeds the "Atlas Demo Co" on first boot
-cd server
 npm install
 npm start              # → http://127.0.0.1:3847
 ```
 
-The default `DATABASE_URL` is `postgresql://contest:contest_local_dev@127.0.0.1:5432/contest_os`.
+The default `DATABASE_URL` is `postgresql://contest:contest_local_dev@127.0.0.1:5432/contest_os`. You can put it in a `.env` file at the repo root.
 
-| Command (in `server/`) | What it does |
+| Command (at the repo root) | What it does |
 |---|---|
 | `npm start` | Migrate, seed if the database is empty, serve on `$PORT` (3847) |
 | `npm run seed` | Wipe and reseed the demo data (the UI's "Reset demo data" does the same) |
@@ -37,7 +36,24 @@ The default `DATABASE_URL` is `postgresql://contest:contest_local_dev@127.0.0.1:
 | `npm run demo` | End-to-end API check against a running server (both rails, bot win, carve-out, refunds, permission rules) |
 | `npm run demo:curl` | The same idea in curl |
 
-## Deploy a public link (Render, free)
+## Deploy on Vercel (free)
+
+The repo is set up for Vercel's zero-config Express support:
+- `app.js` is the serverless entry point.
+- `public/` is served by Vercel's CDN.
+- `vercel.json` pins the Express framework preset.
+
+Serverless has no boot step, so the first request on a fresh database runs the migrations and seeds the demo company. It takes a few seconds, once.
+
+1. Import the repo in Vercel, or keep your existing project.
+2. **Storage → Create Database → Neon (Postgres)**, free plan. Connect it to the project for all environments. That sets `DATABASE_URL`.
+3. **Settings → Build & Deployment:**
+   - Leave **Root Directory** empty.
+   - Remove any **Output Directory** override.
+   - Framework Preset shows Express (pinned by `vercel.json`).
+4. **Redeploy.** Open the site. If `/api/health` returns 503, `DATABASE_URL` isn't set yet.
+
+## Or deploy on Render (free)
 
 1. Push this repo to GitHub (done if you're reading this there).
 2. In [Render](https://dashboard.render.com), choose **New → Blueprint** and pick this repo. Render reads `render.yaml` and creates:
@@ -109,7 +125,10 @@ Grok's docs (`docs/`) were steering toward this order:
 ```
 docs/                design docs from the Grok sessions (brief, brand, money model, rails, decisions)
 migrations/          001–020 SQL, applied in order by server/migrate.js
+app.js               Vercel entry: wraps the server app, migrates/seeds on first request
+vercel.json          Vercel config (Express preset, function settings)
 render.yaml          Render Blueprint (web service + Postgres)
+public/              the SPA (index.html, css/, js/views/*) + demo-entry.html previews
 server/
   server.js          Express app + boot (migrate, auto-seed, listen)
   routes/            people, companies (sub-teams, seats, activity), jobs (escrow + entries),
@@ -118,7 +137,6 @@ server/
   onchain/           TypeScript types for the future real Base adapter (design reference)
   access.js          "Viewing as" permission checks
   seed.js            the Atlas Demo Co data set
-  public/            the SPA (index.html, css/, js/views/*) + demo-entry.html previews
   scripts/           demo.js / demo.sh end-to-end API checks
   test/              unit tests
 ```

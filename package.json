@@ -3,17 +3,17 @@
   "version": "0.2.0",
   "private": true,
   "description": "Lockwork: lock the payout, ship the work, hire the winner. Express + Postgres demo.",
-  "main": "server.js",
+  "main": "app.js",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "start": "node server.js",
-    "migrate": "node migrate.js",
-    "seed": "node seed.js",
-    "test": "node --test test/*.test.js",
-    "demo": "node scripts/demo.js",
-    "demo:curl": "bash scripts/demo.sh"
+    "start": "node server/server.js",
+    "migrate": "node server/migrate.js",
+    "seed": "node server/seed.js",
+    "test": "node --test server/test/*.test.js",
+    "demo": "node server/scripts/demo.js",
+    "demo:curl": "bash server/scripts/demo.sh"
   },
   "license": "UNLICENSED",
   "dependencies": {

@@ -9,7 +9,8 @@ const PORT = Number(process.env.PORT || 3847);
 
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+// On Vercel the CDN serves public/ and this line is ignored; locally and on Render it serves the SPA.
+app.use(express.static(path.join(__dirname, '..', 'public'), { extensions: ['html'] }));
 
 app.use('/api', require('./routes/people'));
 app.use('/api', require('./routes/companies'));
@@ -21,16 +22,40 @@ app.use('/api', require('./routes/meta'));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'not found' }));
 app.use(errorHandler);
 
-async function boot() {
-  const { migrate } = require('./migrate');
-  await migrate();
-  // First boot on an empty database: load the demo company so every screen has data.
-  const { rows } = await pool.query('SELECT count(*)::int AS n FROM workspaces');
-  if (rows[0].n === 0 && process.env.AUTO_SEED !== 'off') {
-    const { seed } = require('./seed');
-    await seed({ reset: false });
-    console.log('seeded demo company');
+let readyPromise = null;
+
+/**
+ * Migrate, then load the demo company on an empty database. Memoized per
+ * process (serverless instances call it on their first request); a failure
+ * clears the memo so the next request retries.
+ */
+function ready() {
+  if (!readyPromise) {
+    readyPromise = (async () => {
+      const { migrate } = require('./migrate');
+      await migrate();
+      if (process.env.AUTO_SEED === 'off') return;
+      const { rows } = await pool.query('SELECT count(*)::int AS n FROM workspaces');
+      if (rows[0].n === 0) {
+        const { seed } = require('./seed');
+        try {
+          await seed({ reset: false });
+          console.log('seeded demo company');
+        } catch (e) {
+          // Another instance seeded at the same moment and won the race.
+          if (!/already|taken|23505/.test(e.message)) throw e;
+        }
+      }
+    })().catch((e) => {
+      readyPromise = null;
+      throw e;
+    });
   }
+  return readyPromise;
+}
+
+async function boot() {
+  await ready();
   app.listen(PORT, () => {
     console.log(`Lockwork listening on http://127.0.0.1:${PORT}`);
     console.log(`DATABASE_URL host: ${new URL(DATABASE_URL).host}`);
@@ -44,4 +69,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, pool };
+module.exports = { app, pool, ready };

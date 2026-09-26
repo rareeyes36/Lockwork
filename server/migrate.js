@@ -19,13 +19,16 @@ const BASELINE_LAST = '019_company_subteams.sql';
 async function migrate({ log = console.log } = {}) {
   const client = await pool.connect();
   try {
+    // One transaction + a transaction-scoped lock: safe behind poolers such as
+    // Neon's (a session lock/unlock pair can land on different connections),
+    // and concurrent cold starts simply wait, then find nothing to do.
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(4242001)');
     await client.query(`
       CREATE TABLE IF NOT EXISTS schema_migrations (
         filename   text PRIMARY KEY,
         applied_at timestamptz NOT NULL DEFAULT now()
       )`);
-    // Serialize concurrent boots.
-    await client.query('SELECT pg_advisory_lock(4242001)');
 
     const files = fs.readdirSync(DIR).filter((f) => f.endsWith('.sql')).sort();
     const done = new Set(
@@ -49,22 +52,22 @@ async function migrate({ log = console.log } = {}) {
       if (done.has(f)) continue;
       const sql = fs.readFileSync(path.join(DIR, f), 'utf8');
       try {
-        await client.query('BEGIN');
         await client.query(sql);
-        await client.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [f]);
-        await client.query('COMMIT');
       } catch (e) {
-        await client.query('ROLLBACK');
         e.message = `migration ${f} failed: ${e.message}`;
         throw e;
       }
+      await client.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [f]);
       applied += 1;
       log(`migrate: applied ${f}`);
     }
+    await client.query('COMMIT');
     if (!applied) log('migrate: up to date');
     return applied;
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw e;
   } finally {
-    await client.query('SELECT pg_advisory_unlock(4242001)').catch(() => {});
     client.release();
   }
 }

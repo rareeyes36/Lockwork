@@ -6,7 +6,7 @@ services:
     name: lockwork
     runtime: node
     plan: free
-    buildCommand: npm ci --prefix server
+    buildCommand: npm ci
     startCommand: node server/server.js
     healthCheckPath: /api/health
     envVars:

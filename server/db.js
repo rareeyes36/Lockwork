@@ -5,8 +5,10 @@ const { Pool } = require('pg');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
 require('dotenv').config({ path: path.join(__dirname, '.env'), quiet: true });
 
+// Vercel + Neon sets DATABASE_URL (older Vercel Postgres used POSTGRES_URL).
 const DATABASE_URL =
   process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
   'postgresql://contest:contest_local_dev@127.0.0.1:5432/contest_os';
 
 // External hosted Postgres (Render external URL, Neon, …) needs TLS. Local dev

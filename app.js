@@ -17,8 +17,10 @@ const app = express();
 app.use('/api', (req, res, next) => {
   ready().then(() => next(), (e) => {
     console.error('startup failed', e);
-    const { FOUND_DATABASE_URL } = require('./server/db');
+    const { FOUND_DATABASE_URL, databaseEnvNames } = require('./server/db');
     res.status(503).json({
+      // Names only, never values: tells us whether Vercel passed any database settings.
+      database_env_seen: databaseEnvNames(process.env),
       error: FOUND_DATABASE_URL
         ? 'Database is connected but not reachable yet. Try again in a moment.'
         : 'No database connected. In Vercel: Storage → Create Database → Neon → Connect to this project, then Redeploy.',

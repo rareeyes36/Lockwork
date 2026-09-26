@@ -44,6 +44,9 @@ const wallet = (seed) => '0x' + crypto.createHash('sha256').update(seed).digest(
 // Seeded entries point at a built-in read-only preview page so demo links render.
 const preview = (kind, title, by) =>
   `/demo-entry.html?${new URLSearchParams({ kind, title, by })}`;
+// Dante's real Base Sepolia wallet: the demo employer locks and releases escrow from it.
+// Override with DANTE_WALLET to demo from a different wallet.
+const DANTE_WALLET = process.env.DANTE_WALLET || '0xd9E790C18C6DD3d53b5Fea0ff74e98BeB77351dA';
 const days = (n) => new Date(Date.now() + n * 864e5).toISOString();
 
 async function seed({ reset = true } = {}) {
@@ -51,7 +54,7 @@ async function seed({ reset = true } = {}) {
 
   return withServer(async (api) => {
     // People — roles anyone can fill (employer / employee / sponsor).
-    const dante = await api('POST', '/people', { handle: 'dante', display_name: 'Dante Final', email: 'dante@lockwork.demo', wallet_address: wallet('dante') });
+    const dante = await api('POST', '/people', { handle: 'dante', display_name: 'Dante Final', email: 'dante@lockwork.demo', wallet_address: DANTE_WALLET });
     const maya = await api('POST', '/people', { handle: 'maya', display_name: 'Maya Chen', wallet_address: wallet('maya') });
     const leo = await api('POST', '/people', { handle: 'leo', display_name: 'Leo Okafor', wallet_address: wallet('leo') });
     const sam = await api('POST', '/people', { handle: 'sam', display_name: 'Sam Rivera', wallet_address: wallet('sam') });

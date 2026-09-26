@@ -61,7 +61,7 @@ async function seed({ reset = true } = {}) {
     const priya = await api('POST', '/people', { handle: 'priya', display_name: 'Priya Nair', wallet_address: wallet('priya') });
     const ivy = await api('POST', '/people', { handle: 'ivy', display_name: 'Ivy Park' });
 
-    const co = await api('POST', '/companies', { name: 'Atlas Demo Co', slug: 'atlas-demo', employer_user_id: dante.id });
+    const co = await api('POST', '/companies', { name: 'Lockwork Demo Co', slug: 'lockwork-demo', employer_user_id: dante.id });
 
     // Sub-teams (company → sub-team → sub-team).
     const automation = await api('POST', `/companies/${co.id}/teams`, { name: 'Automation' });

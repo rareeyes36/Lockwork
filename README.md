@@ -20,7 +20,7 @@ This repo is a working demo: Express + Postgres, with a single-page UI that has 
 # 1. Postgres: any local instance works
 createdb contest_os    # or set DATABASE_URL in server/.env
 
-# 2. Server: migrates and seeds the "Atlas Demo Co" on first boot
+# 2. Server: migrates and seeds the "Lockwork Demo Co" on first boot
 npm install
 npm start              # → http://127.0.0.1:3847
 ```
@@ -175,7 +175,7 @@ server/
                      onchainBase.js (verifies real Base Sepolia escrow transactions)
   onchain/           TypeScript types for the future real Base adapter (design reference)
   access.js          "Viewing as" permission checks
-  seed.js            the Atlas Demo Co data set
+  seed.js            the Lockwork Demo Co data set
   scripts/           demo.js / demo.sh end-to-end API checks
   test/              unit tests
 ```

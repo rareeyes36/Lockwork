@@ -69,7 +69,7 @@ export default async function roles(ctx) {
     submit: 'Set lead bot',
     body: html`<div class="stack">
       <label class="field">Promote an existing bot<select name="bot_id">${options(bots, { blank: '— or create a new one below —', label: (b) => `${b.name} (${b.kind.replace('_', '-')})` })}</select></label>
-      <label class="field">…or new bot name<input name="name" placeholder="e.g. Atlas-Lead"></label>
+      <label class="field">…or new bot name<input name="name" placeholder="e.g. Forge-Lead"></label>
       <label class="field">Operator<select name="operator_user_id">${options(ctx.people, { label: 'display_name', selected: ctx.viewer })}</select></label>
       <p class="small muted">A lead bot can manage the bots and people under its role. Each role gets at most one, and the database enforces that.</p>
     </div>`,

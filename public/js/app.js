@@ -257,7 +257,7 @@ function bindShell(ctx) {
     if (act === 'post-job') openPostJob(ctx);
     if (act === 'new-company') newCompany(ctx);
     if (act === 'reset') {
-      if (!confirm('Reset all demo data to the seeded "Atlas Demo Co"?')) return;
+      if (!confirm('Reset all demo data to the seeded demo company?')) return;
       t.disabled = true;
       try {
         const r = await post('/demo/seed');

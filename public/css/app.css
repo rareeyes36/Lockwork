@@ -127,6 +127,7 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); font-size: 0.78rem; color: var(--text-2); white-space: nowrap; }
 .chip .x { cursor: pointer; color: var(--faint); border: 0; background: none; padding: 0 0 0 2px; font-size: 1rem; line-height: 1; }
 .chip .x:hover { color: var(--red); }
+.live { display: inline-flex; align-items: center; gap: 5px; font: 700 0.66rem var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--green); border: 1px solid rgba(61,214,140,.5); padding: 2px 7px; border-radius: 6px; }
 .sim { display: inline-flex; align-items: center; gap: 5px; font: 700 0.66rem var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); border: 1px dashed rgba(56,208,224,.5); padding: 2px 7px; border-radius: 6px; }
 
 .avatar { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 0.82rem; flex: none; color: #0b0d12; }

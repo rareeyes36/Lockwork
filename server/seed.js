@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const { pool } = require('./db');
 
 const TABLES = [
-  'sponsor_contributions', 'sponsors', 'workspace_plugins', 'employments', 'submission_assets',
+  'chain_txs', 'sponsor_contributions', 'sponsors', 'workspace_plugins', 'employments', 'submission_assets',
   'submissions', 'job_escrows', 'role_assignments', 'bot_agents', 'jobs', 'teams', 'roles',
   'worker_reputation', 'workspaces', 'users',
 ];

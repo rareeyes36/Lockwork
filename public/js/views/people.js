@@ -1,5 +1,5 @@
 import { html, ic, avatar, short, formModal, toast, on, $$ } from '../ui.js';
-import { get, post } from '../api.js';
+import { get, post, patch } from '../api.js';
 
 const TABS = [['all', 'Everyone'], ['employer', 'Employers'], ['employee', 'Employees'], ['sponsor', 'Sponsors'], ['entrant', 'Entrants']];
 
@@ -27,6 +27,8 @@ export default async function people(ctx) {
           <div class="row" style="gap:6px"><b>${p.display_name}</b>${p.id === ctx.viewer ? html`<span class="pill gold nodot">you</span>` : ''}</div>
           <div class="tiny muted">@${p.handle}${p.wallet_address ? html` · <span class="hash">${short(p.wallet_address, 6, 4)}</span>` : ''}</div>
         </div>
+        <span class="grow"></span>
+        <button class="btn sm ghost" data-act="wallet" data-id="${p.id}" title="Set payout wallet">${ic('wallet', 14)}</button>
       </div>
       <div class="row" style="gap:6px;margin-top:12px">
         ${p.is_owner ? html`<span class="pill gold">${ic('crown', 12)} Owner / employer</span>` : tg.includes('employer') ? html`<span class="pill gold">Employer</span>` : ''}
@@ -65,6 +67,22 @@ export default async function people(ctx) {
         tab = b.dataset.v;
         $$('#tabs button', el).forEach((x) => x.classList.toggle('on', x === b));
         el.querySelector('#grid').innerHTML = String(grid());
+      });
+      on(el, 'click', '[data-act=wallet]', (_e, t) => {
+        const p = list.find((x) => x.id === t.dataset.id);
+        formModal({
+          title: `Wallet for ${p.display_name}`,
+          submit: 'Save wallet',
+          body: html`<label class="field">Wallet address (receives USDC payouts; for employers, the wallet that locks escrow)
+            <input name="wallet_address" value="${p.wallet_address || ''}" placeholder="0x…" pattern="0x[0-9a-fA-F]{40}"></label>
+            <p class="tiny muted" style="margin-top:8px">On the testnet these are test funds. Any address works for receiving; use one you control to see payouts arrive.</p>`,
+          async handler(f) {
+            if (f.wallet_address && !/^0x[0-9a-fA-F]{40}$/.test(f.wallet_address)) throw new Error('Must be a 0x address with 40 hex characters.');
+            await patch(`/people/${p.id}`, { wallet_address: f.wallet_address || null });
+            toast('Wallet saved');
+            ctx.refresh();
+          },
+        });
       });
       on(el, 'click', '[data-act=add]', () => formModal({
         title: 'Add a person',

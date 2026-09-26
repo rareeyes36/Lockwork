@@ -13,12 +13,20 @@
     "seed": "node server/seed.js",
     "test": "node --test server/test/*.test.js",
     "demo": "node server/scripts/demo.js",
-    "demo:curl": "bash server/scripts/demo.sh"
+    "demo:curl": "bash server/scripts/demo.sh",
+    "contracts:build": "node contracts/compile.js",
+    "vendor:build": "node contracts/build-viem.js"
   },
   "license": "UNLICENSED",
   "dependencies": {
     "dotenv": "^18.0.4",
     "express": "^5.2.1",
-    "pg": "^8.23.0"
+    "pg": "^8.23.0",
+    "viem": "^2.56.9"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "ganache": "^7.9.2",
+    "solc": "^0.8.28"
   }
 }

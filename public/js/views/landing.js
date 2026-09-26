@@ -30,7 +30,7 @@ export default async function landing() {
         </div>
         <div class="meta">
           <span>${ic('check')} Escrow before entries open</span>
-          <span>${ic('check')} Card or USDC on Base</span>
+          <span>${ic('check')} Card or USDC on Base (live on testnet)</span>
           <span>${ic('check')} Refunds are free</span>
         </div>
       </div>
@@ -119,9 +119,9 @@ export default async function landing() {
           <p class="muted">The platform holds the funds until release or refund. It's the fastest way to launch and fits fiat-first employers.</p>
         </div>
         <div class="rail-card onchain">
-          <div class="row"><span class="pill blue nodot">${ic('chain', 12)} On-chain</span><span class="sim">simulated in demo</span></div>
+          <div class="row"><span class="pill blue nodot">${ic('chain', 12)} On-chain</span><span class="live">live on Base Sepolia · test USDC</span></div>
           <h3 style="margin:12px 0 6px">USDC escrow on Base</h3>
-          <p class="muted">The employer's wallet locks USDC in an escrow contract. The contract releases to the winner (2.5% skimmed on release) or refunds on cancel or expiry.</p>
+          <p class="muted">The employer's wallet locks USDC in the Lockwork escrow contract. Only that employer can release it to the winner (2.5% goes to the platform on release) or refund it. Every step is a real transaction you can check on Basescan. The demo uses test USDC.</p>
         </div>
       </div>
     </div>
@@ -134,14 +134,15 @@ export default async function landing() {
       <div class="roadmap">
         <div class="card"><span class="pill paid">Live demo</span><ul>
           <li>Post → lock → submit → review → pay one → hire</li>
-          <li>Custodial and USDC-on-Base rails (simulated)</li>
+          <li>USDC escrow contract on Base Sepolia with real wallet transactions (test USDC)</li>
+          <li>Card rail (simulated)</li>
           <li>Nested jobs with carve-out and expansion budgets</li>
           <li>Roles, lead bots, job-scoped bots</li>
           <li>Sponsors, plugins, seats, reputation</li>
         </ul></div>
         <div class="card"><span class="pill funded">Next</span><ul>
           <li>Real custodial payments (KYC when real money moves)</li>
-          <li>Base Sepolia escrow contract and wallet connect</li>
+          <li>Audited escrow on Base mainnet (real USDC)</li>
           <li>Auth and invite-only job links</li>
           <li>$79/mo seat billing</li>
         </ul></div>
@@ -165,7 +166,7 @@ export default async function landing() {
   <footer class="lp-foot">
     <div class="lp-wrap row between">
       <span class="row" style="gap:8px">${logo(18)} Lockwork · built by Dante Final</span>
-      <span>Demo build: payments and chain activity are simulated.</span>
+      <span>Demo build: USDC runs on Base Sepolia with test funds; card payments are simulated.</span>
     </div>
   </footer>
 </div>`,

@@ -9,9 +9,9 @@ This repo is a working demo: Express + Postgres, with a single-page UI that has 
 | | |
 |---|---|
 | **Backend** | Node 20+, Express 5, Postgres 14+ (`server/`) |
-| **Schema** | 20 numbered migrations (`migrations/`), applied automatically on boot |
+| **Schema** | 21 numbered migrations (`migrations/`), applied automatically on boot |
 | **UI** | Plain HTML/CSS/JS modules with no build step (`public/`) |
-| **Payments** | Both rails are **simulated**: custodial card/USD, and USDC on Base (fake tx hashes, clearly labeled) |
+| **Payments** | **USDC on Base Sepolia is real**: a Lockwork escrow contract with wallet-signed transactions, using test USDC. The card rail is simulated. |
 | **Auth** | Demo stand-in: a "Viewing as" picker sends `X-Lockwork-As`, and the server enforces permissions for that person |
 
 ## Run it locally
@@ -52,6 +52,40 @@ Serverless has no boot step, so the first request on a fresh database runs the m
    - Remove any **Output Directory** override.
    - Framework Preset shows Express (pinned by `vercel.json`).
 4. **Redeploy.** Open the site. If `/api/health` returns 503, `DATABASE_URL` isn't set yet.
+
+## Turn on real money (Base Sepolia testnet)
+
+USDC jobs lock, pay out and refund through **your own escrow contract** (`contracts/LockworkEscrow.sol`), with real transactions signed in the employer's browser wallet. The server never holds keys. It verifies every transaction hash against the chain before updating the database, and each hash can back only one action. It uses **test USDC**, which has no dollar value.
+
+One-time setup, about 10 minutes:
+1. **Get a browser wallet.** MetaMask or Coinbase Wallet (the extension, or the app's built-in browser).
+2. **Get free Base Sepolia ETH for gas.** Use the [Coinbase faucet](https://portal.cdp.coinbase.com/products/faucet) or any Base Sepolia faucet.
+3. **Get free test USDC.** At [faucet.circle.com](https://faucet.circle.com), choose Base Sepolia.
+4. **Deploy the escrow.** Open **`/deploy.html`** on your site, click **Connect wallet**, then **Deploy escrow**. It's one transaction, and your wallet becomes the 2.5% fee recipient.
+5. **Point the site at the contract.** In Vercel → Settings → Environment Variables, set `LOCKWORK_ESCROW_ADDRESS` to the deployed address, then **Redeploy**.
+
+After that:
+- **USDC jobs you lock are real.** The job page shows **LIVE · TESTNET** and Basescan links for each transaction.
+- **Existing demo data stays simulated.** The seeded USDC jobs keep their "sim" labels.
+- **For the payout demo**, give the winner (e.g. Leo, via People → wallet icon) an address you control, such as a second MetaMask account. Then you can show the USDC arriving.
+- **Backup plan:** if a wallet misbehaves live, the lock dialog has **Use simulation instead**.
+
+How it maps to the product rules:
+- **`lock(jobKey, amount)`:** the employer's wallet approves, then deposits. Fee 0.
+- **`release(jobKey, winner, amount)`:** employer only. It pays 97.5% to the winner and 2.5% to the fee recipient. One escrow can be released in parts: carve-out sub-jobs pay their winners from the root escrow, and the root winner gets the rest (D1).
+- **`refund(jobKey)`:** employer only. Everything left goes back to the employer. Fee 0.
+- **Keys and limits:** `jobKey = keccak256(job id)`. There are no admin withdrawals, no upgrades and no pausing. The contract is **not audited**, so don't put real mainnet funds in it.
+
+Optional env vars:
+- `LOCKWORK_RPC_URL` (default `https://sepolia.base.org`)
+- `LOCKWORK_CHAIN_ID` (default `84532`)
+- `LOCKWORK_USDC_ADDRESS` (default: Circle's Base Sepolia USDC `0x036C…CF7e`)
+- `LOCKWORK_EXPLORER_URL`
+
+Developer commands:
+- `npm run contracts:build`: recompile the contracts with solc and refresh the ABI/bytecode JSON.
+- `npm run vendor:build`: rebuild the browser viem bundle in `public/vendor/`.
+- `npm test`: runs the fee-math tests and the contract tests on an in-process chain.
 
 ## Or deploy on Render (free)
 
@@ -97,9 +131,11 @@ Before the meeting:
 - plugin subscriptions
 - all permission checks for the selected person
 
+**Real on the testnet** (once `LOCKWORK_ESCROW_ADDRESS` is set): USDC lock, release and refund through the escrow contract, signed by the employer's wallet and verified by the server.
+
 **Simulated (and labeled "sim" in the UI):**
 - the card charge
-- the USDC-on-Base wallet and escrow contract (no keys, nothing broadcast)
+- USDC jobs locked before the contract was configured, or through "Use simulation instead"
 - bots, which are config stubs that enter and win like people do
 - login
 - seat billing
@@ -124,16 +160,19 @@ Grok's docs (`docs/`) were steering toward this order:
 
 ```
 docs/                design docs from the Grok sessions (brief, brand, money model, rails, decisions)
-migrations/          001–020 SQL, applied in order by server/migrate.js
+migrations/          001–021 SQL, applied in order by server/migrate.js
+contracts/          LockworkEscrow.sol (+ MockUSDC for tests), compile.js, build-viem.js
 app.js               Vercel entry: wraps the server app, migrates/seeds on first request
 vercel.json          Vercel config (Express preset, function settings)
 render.yaml          Render Blueprint (web service + Postgres)
-public/              the SPA (index.html, css/, js/views/*) + demo-entry.html previews
+public/              the SPA (index.html, css/, js/views/*, js/wallet.js), deploy.html,
+                     contracts/ (ABI + bytecode), vendor/viem.js, demo-entry.html previews
 server/
   server.js          Express app + boot (migrate, auto-seed, listen)
   routes/            people, companies (sub-teams, seats, activity), jobs (escrow + entries),
                      org (roles, bots), market (plugins, sponsors), meta (stats, reputation, seed)
-  escrow/            feeMath.js (BigInt, 250 bps), adapters.js (custodial + Base/USDC sim)
+  escrow/            feeMath.js (BigInt, 250 bps), adapters.js (custodial + USDC sim),
+                     onchainBase.js (verifies real Base Sepolia escrow transactions)
   onchain/           TypeScript types for the future real Base adapter (design reference)
   access.js          "Viewing as" permission checks
   seed.js            the Atlas Demo Co data set

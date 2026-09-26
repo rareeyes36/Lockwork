@@ -19,3 +19,4 @@ Order matters: the `jobs.winner_submission_id` FK is added in `009`, after `subm
 - `018_recursive_jobs.sql`: parent/child jobs, budget_source, root_job_id.
 - `019_company_subteams.sql`: teams as sub-teams under a company (workspaces); jobs.team_id.
 - `020_nested_escrow_ledger.sql`: jobs.depth (≤ 3), plus job_escrows.carved_out_amount and refund_amount, so a parent that splits into sub-jobs releases or refunds only its residual (D1/D2).
+- `021_chain_txs.sql`: records every verified on-chain transaction hash so one lock, release or refund transaction can back only one action.

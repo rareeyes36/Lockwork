@@ -7,6 +7,7 @@ const { pool, DATABASE_URL } = require('../db');
 const { asyncHandler, HttpError } = require('../lib');
 const { PLATFORM_FEE_BPS, PLACEMENT_FEE_BPS } = require('../escrow/feeMath');
 const { BASE_CHAIN_ID, BASE_USDC_ADDRESS } = require('../escrow/adapters');
+const onchain = require('../escrow/onchainBase');
 const { SEAT_PRICE_USD } = require('./companies');
 const { seed } = require('../seed');
 
@@ -25,8 +26,10 @@ router.get('/config', (_req, res) => {
     max_depth: 3,
     rails: {
       custodial: { label: 'Card / balance (custodial)', currency: 'USD', simulated: true },
-      onchain: { label: 'USDC on Base', currency: 'USDC', chain_id: BASE_CHAIN_ID, token: BASE_USDC_ADDRESS, simulated: true },
+      onchain: { label: 'USDC on Base', currency: 'USDC', chain_id: BASE_CHAIN_ID, token: BASE_USDC_ADDRESS, simulated: !onchain.config().enabled },
     },
+    // Real wallet escrow (testnet). enabled=false → the USDC rail stays simulated.
+    chain: onchain.config(),
     demo_reset: process.env.DEMO_RESET !== 'off',
   });
 });

@@ -19,6 +19,7 @@ const { asyncHandler, actorId, required, HttpError } = require('../lib');
 const { loadCompany, assertCanPost, assertJobEmployer } = require('../access');
 const { adapterFor, carveout } = require('../escrow/adapters');
 const { PLATFORM_FEE_BPS, toMinor, fromMinor, releaseBreakdown } = require('../escrow/feeMath');
+const onchain = require('../escrow/onchainBase');
 
 const router = express.Router();
 
@@ -60,6 +61,49 @@ async function carvedPaid(c, jobId, currency) {
     [jobId]
   );
   return toMinor(r.rows[0].paid, currency);
+}
+
+/**
+ * The escrow that actually holds the money for `job`: itself, or (for a
+ * carve-out) the nearest ancestor that locked root or expansion capital.
+ */
+async function fundingOf(db, job) {
+  let cur = job;
+  while (cur.budget_source === 'parent_carveout' && cur.parent_job_id) {
+    cur = (await db.query('SELECT * FROM jobs WHERE id = $1', [cur.parent_job_id])).rows[0];
+  }
+  const e = (await db.query('SELECT * FROM job_escrows WHERE job_id = $1', [cur.id])).rows[0];
+  return { jobId: cur.id, escrow: e, real: Boolean(e && e.meta_json && e.meta_json.mode === 'real') };
+}
+
+/** Who receives a winning submission's payout (bots pay their operator). */
+async function resolvePayee(db, sub) {
+  let payee = sub.submitter_user_id;
+  let bot = null;
+  if (sub.submitter_type === 'bot') {
+    bot = (await db.query('SELECT * FROM bot_agents WHERE id = $1', [sub.submitter_bot_id])).rows[0];
+    payee = bot && bot.config_json && bot.config_json.operator_user_id;
+    if (!payee) throw new HttpError(400, 'This bot has no operator. Set one on the Bots page so the payout has somewhere to go.');
+  }
+  const row = (await db.query('SELECT id, display_name, wallet_address FROM users WHERE id = $1', [payee])).rows[0];
+  if (!row) throw new HttpError(400, 'payee not found');
+  return { payee: row, bot };
+}
+
+async function readJob(id) {
+  const j = (await pool.query('SELECT * FROM jobs WHERE id = $1', [id])).rows[0];
+  if (!j) throw new HttpError(404, 'job not found');
+  const e = (await pool.query('SELECT * FROM job_escrows WHERE job_id = $1', [id])).rows[0];
+  if (!e) throw new HttpError(400, 'escrow missing');
+  return { job: j, escrow: e };
+}
+
+function realMeta(proof, extra) {
+  const c = onchain.config();
+  return {
+    sim: false, mode: 'real', chain: 'base', network: c.chain_name, chain_id: c.chain_id,
+    escrow_contract: c.escrow, token_address: c.usdc, ...extra,
+  };
 }
 
 /* ---------- create ---------- */
@@ -203,7 +247,8 @@ async function jobDetail(id) {
          FROM jobs j LEFT JOIN job_escrows e ON e.job_id = j.id
         WHERE j.parent_job_id = $1 ORDER BY j.created_at`, [id]),
     pool.query(
-      `SELECT s.*, u.display_name AS submitter_name, u.handle AS submitter_handle,
+      `SELECT s.*, u.display_name AS submitter_name, u.handle AS submitter_handle, u.wallet_address AS submitter_wallet,
+              op.wallet_address AS bot_operator_wallet,
               b.name AS bot_name, b.kind AS bot_kind, b.config_json->>'operator_user_id' AS bot_operator_id,
               op.display_name AS bot_operator_name,
               COALESCE((SELECT json_agg(a ORDER BY a.created_at) FROM submission_assets a WHERE a.submission_id = s.id), '[]') AS assets
@@ -240,9 +285,19 @@ async function jobDetail(id) {
       currency: esc.currency,
     };
   }
+  const f = await fundingOf(pool, job);
+  const chain = esc && esc.rail === 'onchain' ? {
+    mode: f.real ? 'real' : (f.escrow && f.escrow.state !== 'draft' ? 'sim' : null),
+    funding_job_id: f.jobId,
+    job_key: onchain.jobKey(f.jobId),
+    own_key: onchain.jobKey(job.id),
+    // The wallet that locked the funding escrow: the only one that can release/refund it.
+    payer_wallet: f.escrow && f.escrow.meta_json ? f.escrow.meta_json.payer_wallet || null : null,
+  } : null;
   return {
     job,
     escrow: esc,
+    chain,
     budget,
     parent: parent.rows[0] || null,
     children: children.rows,
@@ -263,6 +318,20 @@ router.get('/jobs/:id', asyncHandler(async (req, res) => {
 
 router.post('/jobs/:id/fund', asyncHandler(async (req, res) => {
   const actor = actorId(req);
+  const txHash = req.body && req.body.tx_hash;
+
+  // Real lock: verify the wallet transaction before touching the database.
+  let proof = null;
+  if (txHash) {
+    const { job: pj, escrow: pe } = await readJob(req.params.id);
+    if (pe.rail !== 'onchain' || pj.budget_source === 'parent_carveout') {
+      throw new HttpError(400, 'Only USDC root or expansion jobs are locked with a wallet transaction.');
+    }
+    proof = await onchain.verifyEvent(txHash, 'Locked', {
+      jobKey: onchain.jobKey(pj.id), amount: toMinor(pe.amount, 'USDC'),
+    });
+  }
+
   const out = await tx(async (c) => {
     const { job, escrow } = await lockJob(c, req.params.id);
     await assertJobEmployer(c, job, actor, 'fund');
@@ -277,6 +346,19 @@ router.post('/jobs/:id/fund', asyncHandler(async (req, res) => {
         throw new HttpError(400, `Parent only has ${fromMinor(remaining, pe.currency)} ${pe.currency} left to carve out.`, { rule: 'carveout_cap' });
       }
       lock = carveout.lock(escrow.id, { parentEscrowId: pe.id });
+      const f = await fundingOf(c, job);
+      lock.meta = { ...lock.meta, mode: f.real ? 'real' : 'sim', funding_job_id: f.jobId };
+    } else if (proof) {
+      const key = onchain.jobKey(job.id);
+      const cfg = onchain.config();
+      lock = {
+        escrowRef: `${cfg.chain_id}:${cfg.escrow}#${key}`,
+        txRef: proof.tx,
+        meta: realMeta(proof, { job_key: key, payer_wallet: proof.args.employer, lock_tx: proof.tx, lock_block: proof.block }),
+      };
+      await onchain.recordTx(c, proof, job.id, 'lock');
+      await c.query('UPDATE users SET wallet_address = $2 WHERE id = $1 AND wallet_address IS NULL',
+        [escrow.payer_user_id, proof.args.employer]);
     } else {
       const adapter = adapterFor(escrow.rail);
       let wallet = null;
@@ -285,6 +367,7 @@ router.post('/jobs/:id/fund', asyncHandler(async (req, res) => {
         wallet = (req.body && req.body.wallet_address) || payer.rows[0].wallet_address;
       }
       lock = adapter.lock(escrow.id, { payerWallet: wallet });
+      lock.meta.mode = 'sim';
     }
 
     const e = await c.query(
@@ -320,6 +403,28 @@ router.post('/jobs/:id/pay', asyncHandler(async (req, res) => {
   const actor = actorId(req);
   const { submission_id, role_id } = req.body || {};
   if (!submission_id) throw new HttpError(400, 'submission_id required');
+  const txHash = req.body && req.body.tx_hash;
+
+  // Real release: the employer's wallet must have called release() for exactly
+  // this winner and amount. Verify before opening the DB transaction.
+  let proof = null;
+  {
+    const { job: pj, escrow: pe } = await readJob(req.params.id);
+    const f = await fundingOf(pool, pj);
+    if (f.real) {
+      if (!txHash) throw new HttpError(400, "This payout is locked on-chain. Release it from the employer's wallet.", { rule: 'needs_tx' });
+      const sub = (await pool.query('SELECT * FROM submissions WHERE id = $1 AND job_id = $2', [submission_id, pj.id])).rows[0];
+      if (!sub) throw new HttpError(404, 'submission not found on this job');
+      const { payee } = await resolvePayee(pool, sub);
+      if (!payee.wallet_address) throw new HttpError(400, `${payee.display_name} has no wallet address to receive USDC.`);
+      const residual = toMinor(pe.amount, 'USDC') - (await carvedPaid(pool, pj.id, 'USDC'));
+      proof = await onchain.verifyEvent(txHash, 'Released', {
+        jobKey: onchain.jobKey(f.jobId), winner: payee.wallet_address, amount: residual,
+      });
+    } else if (txHash) {
+      throw new HttpError(400, 'This escrow is simulated; no wallet transaction is needed.');
+    }
+  }
 
   const out = await tx(async (c) => {
     const { job, escrow } = await lockJob(c, req.params.id);
@@ -343,15 +448,8 @@ router.post('/jobs/:id/pay', asyncHandler(async (req, res) => {
     if (sub.status !== 'submitted') throw new HttpError(400, `submission is ${sub.status}`);
 
     // Resolve who actually receives the money.
-    let payee = sub.submitter_user_id;
-    let bot = null;
-    if (sub.submitter_type === 'bot') {
-      bot = (await c.query('SELECT * FROM bot_agents WHERE id = $1', [sub.submitter_bot_id])).rows[0];
-      payee = bot && bot.config_json && bot.config_json.operator_user_id;
-      if (!payee) throw new HttpError(400, 'This bot has no operator. Set one on the Bots page so the payout has somewhere to go.');
-    }
-    const payeeRow = (await c.query('SELECT id, display_name, wallet_address FROM users WHERE id = $1', [payee])).rows[0];
-    if (!payeeRow) throw new HttpError(400, 'payee not found');
+    const { payee: payeeRow, bot } = await resolvePayee(c, sub);
+    const payee = payeeRow.id;
 
     // D1: only the residual that leaves the tree is released (and charged).
     const cur = escrow.currency;
@@ -366,8 +464,22 @@ router.post('/jobs/:id/pay', asyncHandler(async (req, res) => {
       await c.query(`UPDATE job_escrows SET state = 'in_review' WHERE id = $1`, [escrow.id]);
     }
 
-    // Carve-out escrows inherit the parent's rail, so they pay out on it too.
-    const release = adapterFor(escrow.rail).release(escrow.escrow_ref, { winnerWallet: payeeRow.wallet_address });
+    let release;
+    if (proof) {
+      // State may have moved while we waited for the chain: re-check the match.
+      if (proof.args.amount !== residual) throw new HttpError(409, 'The escrow changed while confirming. Refresh and retry.');
+      if (proof.args.fee !== toMinor(fee.fee_amount, cur)) {
+        throw new HttpError(400, 'The escrow contract charged a different fee than Lockwork expects (250 bps).');
+      }
+      release = {
+        txRef: proof.tx,
+        meta: realMeta(proof, { release_tx: proof.tx, release_block: proof.block, winner_wallet: proof.args.winner }),
+      };
+      await onchain.recordTx(c, proof, job.id, 'release');
+    } else {
+      // Carve-out escrows inherit the parent's rail, so they pay out on it too.
+      release = adapterFor(escrow.rail).release(escrow.escrow_ref, { winnerWallet: payeeRow.wallet_address });
+    }
     if (job.budget_source === 'parent_carveout') release.meta.via_carveout = true;
 
     await c.query(`UPDATE submissions SET status = 'selected' WHERE id = $1`, [sub.id]);
@@ -444,6 +556,20 @@ router.post('/jobs/:id/cancel', asyncHandler(async (req, res) => {
   const actor = actorId(req);
   const reason = (req.body && req.body.reason) || 'cancelled';
   if (!['cancelled', 'expired'].includes(reason)) throw new HttpError(400, 'reason must be cancelled or expired');
+  const txHash = req.body && req.body.tx_hash;
+
+  // Real refund of root/expansion capital: verify the wallet's refund() first.
+  let proof = null;
+  {
+    const { job: pj, escrow: pe } = await readJob(req.params.id);
+    const f = await fundingOf(pool, pj);
+    const ownsFunds = pj.budget_source !== 'parent_carveout';
+    if (f.real && ownsFunds && ACTIVE.includes(pj.status)) {
+      if (!txHash) throw new HttpError(400, "This escrow is locked on-chain. Refund it from the employer's wallet.", { rule: 'needs_tx' });
+      const refund = toMinor(pe.amount, 'USDC') - (await carvedPaid(pool, pj.id, 'USDC'));
+      proof = await onchain.verifyEvent(txHash, 'Refunded', { jobKey: onchain.jobKey(pj.id), amount: refund });
+    }
+  }
 
   const out = await tx(async (c) => {
     const { job, escrow } = await lockJob(c, req.params.id);
@@ -480,6 +606,10 @@ router.post('/jobs/:id/cancel', asyncHandler(async (req, res) => {
     let meta;
     if (job.budget_source === 'parent_carveout') {
       meta = { refund_to: 'parent_escrow', parent_job_id: job.parent_job_id, fee_on_refund: '0' };
+    } else if (proof) {
+      if (proof.args.amount !== toMinor(refund, cur)) throw new HttpError(409, 'The escrow changed while confirming. Refresh and retry.');
+      meta = realMeta(proof, { refund_to: 'payer', refund_tx: proof.tx, refund_block: proof.block, fee_on_refund: '0', refund_reason: reason });
+      await onchain.recordTx(c, proof, job.id, 'refund');
     } else {
       const r = adapterFor(escrow.rail).refund(escrow.escrow_ref, reason);
       meta = { ...r.meta, refund_to: 'payer', refund_tx: r.txRef, fee_on_refund: '0' };

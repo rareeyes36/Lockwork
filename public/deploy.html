@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deploy escrow · Lockwork</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    .wrap { max-width: 720px; margin: 0 auto; padding: 32px 16px 60px; }
+    .wrap h1 { font-size: 1.6rem; font-weight: 850; letter-spacing: -.02em; margin: 16px 0 6px; }
+    ol.steps { color: var(--text-2); padding-left: 20px; margin: 10px 0 0; }
+    ol.steps li { margin: 6px 0; }
+    .addr { font: 700 1rem var(--mono); word-break: break-all; color: var(--gold-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="brand" href="/#/">
+      <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><path d="M10 14V10.5a6 6 0 0 1 12 0V14" fill="none" stroke="#f2b84b" stroke-width="3" stroke-linecap="round"/><rect x="5.5" y="13" width="21" height="16" rx="4.5" fill="#f2b84b"/><circle cx="16" cy="20" r="2.4" fill="#1d1404"/><rect x="15" y="21" width="2" height="4.2" rx="1" fill="#1d1404"/></svg>
+      Lockwork
+    </a>
+    <h1>Deploy the escrow contract</h1>
+    <p class="muted">One transaction from your own wallet. It deploys <b>LockworkEscrow</b> on the test network with Circle's test USDC. The fee is 2.5% on release, paid to your wallet. Nobody, including you as deployer, can move locked funds except the employer who locked them.</p>
+
+    <div class="card" style="margin-top:18px">
+      <div class="card-head"><h3>Before you start</h3><span class="live">testnet · no real money</span></div>
+      <ol class="steps">
+        <li>Install MetaMask or Coinbase Wallet (or open this page inside the wallet app).</li>
+        <li>Get free <b>Base Sepolia ETH</b> for gas: <a href="https://portal.cdp.coinbase.com/products/faucet" target="_blank" rel="noopener">Coinbase faucet</a> (or any Base Sepolia faucet).</li>
+        <li>Get free <b>test USDC</b> for locking jobs: <a href="https://faucet.circle.com" target="_blank" rel="noopener">faucet.circle.com</a> → Base Sepolia.</li>
+      </ol>
+    </div>
+
+    <div class="card" style="margin-top:14px" id="state">
+      <div class="card-head"><h3>Network</h3><span id="net" class="pill grey nodot">loading…</span></div>
+      <dl class="kv">
+        <dt>Chain</dt><dd id="chain">…</dd>
+        <dt>USDC</dt><dd id="usdc" class="hash">…</dd>
+        <dt>Configured escrow</dt><dd id="configured">…</dd>
+        <dt>Your wallet</dt><dd id="acct">not connected</dd>
+        <dt>Balances</dt><dd id="bal">…</dd>
+      </dl>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="connect">Connect wallet</button>
+        <button class="btn blue" id="deploy" disabled>Deploy escrow</button>
+      </div>
+      <div id="err" class="form-err hidden"></div>
+    </div>
+
+    <div class="card hidden" style="margin-top:14px;border-color:rgba(61,214,140,.45)" id="done">
+      <div class="card-head"><h3>Deployed ✓</h3><button class="btn sm" id="copy">Copy address</button></div>
+      <div class="addr" id="addr"></div>
+      <div class="small" style="margin-top:8px" id="links"></div>
+      <div class="divider"></div>
+      <p class="small"><b>Last step:</b> in Vercel, go to Project → Settings → Environment Variables, add <code>LOCKWORK_ESCROW_ADDRESS</code> = the address above (all environments), then <b>Redeploy</b>. USDC jobs then lock and pay out for real on the testnet.</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as W from '/js/wallet.js';
+    import { formatUnits } from '/vendor/viem.js';
+
+    const $ = (id) => document.getElementById(id);
+    const showErr = (m) => { $('err').textContent = m; $('err').classList.toggle('hidden', !m); };
+    const cfg = (await (await fetch('/api/config')).json()).chain;
+    $('chain').textContent = `${cfg.chain_name} (${cfg.chain_id})`;
+    $('usdc').textContent = cfg.usdc;
+    $('configured').innerHTML = cfg.escrow
+      ? `<span class="live">active</span> <span class="hash">${cfg.escrow}</span>`
+      : '<span class="muted">none yet (USDC jobs run simulated)</span>';
+    $('net').textContent = cfg.escrow ? 'escrow configured' : 'not configured';
+    $('net').className = cfg.escrow ? 'pill green nodot' : 'pill gold nodot';
+    if (!W.hasWallet()) showErr('No browser wallet detected. Install MetaMask or Coinbase Wallet, or open this page in the wallet app.');
+
+    let wc = null;
+    $('connect').onclick = async () => {
+      showErr('');
+      try {
+        wc = await W.connect(cfg);
+        $('acct').innerHTML = `<span class="hash">${wc.account}</span>`;
+        const eth = await wc.pub.getBalance({ address: wc.account });
+        // A balance read failure must not block deploying (e.g. wrong token address).
+        const usdc = await W.usdcBalance(wc, cfg).then(W.formatUsdc, () => '?');
+        $('bal').textContent = `${Number(formatUnits(eth, 18)).toFixed(4)} ETH · ${usdc} USDC`;
+        $('deploy').disabled = eth === 0n;
+        if (eth === 0n) showErr('This wallet has no Base Sepolia ETH for gas. Use the faucet above, then reconnect.');
+      } catch (e) { showErr(W.walletError(e)); }
+    };
+    $('deploy').onclick = async () => {
+      showErr('');
+      $('deploy').disabled = true;
+      $('deploy').textContent = 'Confirm in wallet…';
+      try {
+        const { hash, address } = await W.deployEscrow(wc, cfg);
+        $('addr').textContent = address;
+        const a = W.addressUrl(cfg, address);
+        const t = W.txUrl(cfg, hash);
+        $('links').innerHTML = [a && `<a href="${a}" target="_blank" rel="noopener">Contract on Basescan ↗</a>`, t && `<a href="${t}" target="_blank" rel="noopener">Deploy tx ↗</a>`].filter(Boolean).join(' · ') || hash;
+        $('done').classList.remove('hidden');
+        $('copy').onclick = () => navigator.clipboard.writeText(address).then(() => { $('copy').textContent = 'Copied'; });
+        $('deploy').textContent = 'Deployed';
+      } catch (e) {
+        showErr(W.walletError(e));
+        $('deploy').disabled = false;
+        $('deploy').textContent = 'Deploy escrow';
+      }
+    };
+  </script>
+</body>
+</html>

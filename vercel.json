@@ -3,7 +3,7 @@
   "framework": "express",
   "functions": {
     "app.js": {
-      "includeFiles": "migrations/**",
+      "includeFiles": "{migrations/**,public/**}",
       "maxDuration": 60
     }
   }

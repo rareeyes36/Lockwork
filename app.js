@@ -13,7 +13,8 @@ const app = express();
 
 // Serverless has no boot step: the first request on each instance migrates
 // (and seeds an empty database) before anything else runs.
-app.use((req, res, next) => {
+// Only the API needs the database; pages and assets must load even before it's ready.
+app.use('/api', (req, res, next) => {
   ready().then(() => next(), (e) => {
     console.error('startup failed', e);
     res.status(503).json({ error: 'Database not ready. Is DATABASE_URL set?', detail: e.message });

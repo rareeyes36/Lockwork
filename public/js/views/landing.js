@@ -2,8 +2,12 @@
 // escrow-first, "company" not "team", no "users", no "freelance"/"Upwork for X".
 
 import { html, ic, logo, avatar } from '../ui.js';
+import { get } from '../api.js';
 
 export default async function landing() {
+  // Only claim "live" once the escrow contract is actually configured.
+  let live = false;
+  try { live = Boolean((await get('/config')).chain.enabled); } catch { /* landing still renders */ }
   return {
     html: html`
 <div class="lp">
@@ -30,7 +34,7 @@ export default async function landing() {
         </div>
         <div class="meta">
           <span>${ic('check')} Escrow before entries open</span>
-          <span>${ic('check')} Card or USDC on Base (live on testnet)</span>
+          <span>${ic('check')} Card or USDC on Base</span>
           <span>${ic('check')} Refunds are free</span>
         </div>
       </div>
@@ -119,7 +123,7 @@ export default async function landing() {
           <p class="muted">The platform holds the funds until release or refund. It's the fastest way to launch and fits fiat-first employers.</p>
         </div>
         <div class="rail-card onchain">
-          <div class="row"><span class="pill blue nodot">${ic('chain', 12)} On-chain</span><span class="live">live on Base Sepolia · test USDC</span></div>
+          <div class="row"><span class="pill blue nodot">${ic('chain', 12)} On-chain</span>${live ? html`<span class="live">live on Base Sepolia · test USDC</span>` : html`<span class="sim">simulated in this demo · contract ready</span>`}</div>
           <h3 style="margin:12px 0 6px">USDC escrow on Base</h3>
           <p class="muted">The employer's wallet locks USDC in the Lockwork escrow contract. Only that employer can release it to the winner (2.5% goes to the platform on release) or refund it. Every step is a real transaction you can check on Basescan. The demo uses test USDC.</p>
         </div>
@@ -134,7 +138,9 @@ export default async function landing() {
       <div class="roadmap">
         <div class="card"><span class="pill paid">Live demo</span><ul>
           <li>Post → lock → submit → review → pay one → hire</li>
-          <li>USDC escrow contract on Base Sepolia with real wallet transactions (test USDC)</li>
+          ${live
+            ? html`<li>USDC escrow contract on Base Sepolia with real wallet transactions (test USDC)</li>`
+            : html`<li>USDC escrow contract written and tested; wallet flow built (simulated here)</li>`}
           <li>Card rail (simulated)</li>
           <li>Nested jobs with carve-out and expansion budgets</li>
           <li>Roles, lead bots, job-scoped bots</li>
@@ -166,7 +172,7 @@ export default async function landing() {
   <footer class="lp-foot">
     <div class="lp-wrap row between">
       <span class="row" style="gap:8px">${logo(18)} Lockwork · built by Dante Final</span>
-      <span>Demo build: USDC runs on Base Sepolia with test funds; card payments are simulated.</span>
+      <span>${live ? 'Demo build: USDC runs on Base Sepolia with test funds; card payments are simulated.' : 'Demo build: payments are simulated; the Base escrow contract is ready to deploy.'}</span>
     </div>
   </footer>
 </div>`,

@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pitch deck · Lockwork</title>
+  <meta name="description" content="Lockwork pitch deck outline — contest-to-hire clearinghouse with live Base Sepolia escrow.">
+  <meta name="theme-color" content="#0B1F3A">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --bg: #f4f6f9; --bg-2: #eef1f6; --panel: #ffffff; --line: #d0d5de; --line-2: #b8c0cc;
+  --text: #0b1f3a; --text-2: #334155; --muted: #64748b; --faint: #94a3b8;
+  --navy: #0b1f3a; --navy-2: #15355c; --link: #1b4f8a; --green: #0d7a4f;
+  --green-soft: rgba(13,122,79,.1); --radius: 4px;
+  --font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, pre { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--bg-2); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); }
+pre { background: var(--navy); color: #e2e8f0; padding: 14px 16px; border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--line); }
+pre code { background: transparent; border: 0; padding: 0; color: inherit; }
+.doc-top {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 20px; background: var(--navy); color: #fff;
+  border-bottom: 1px solid #15355c;
+}
+.doc-top a { color: #cbd5e1; font-size: 0.82rem; font-weight: 600; }
+.doc-top a:hover { color: #fff; text-decoration: none; }
+.doc-top .brand { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em; }
+.doc-top .links { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.doc-top .pill {
+  display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.12); color: #e2e8f0; font-size: 0.72rem; font-weight: 700;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px 80px; }
+.hero-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px 18px; margin: 0 0 28px; box-shadow: 0 1px 2px rgba(11,31,58,.06);
+}
+.hero-card h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 1.9rem); font-weight: 850; letter-spacing: -0.02em; }
+.hero-card .sub { color: var(--muted); margin: 0 0 12px; font-size: 0.95rem; }
+.addr-grid { display: grid; gap: 8px; margin-top: 10px; }
+.addr-row { display: grid; grid-template-columns: 140px 1fr; gap: 8px; font-size: 0.82rem; }
+.addr-row dt { color: var(--muted); font-weight: 600; }
+.addr-row dd { margin: 0; font-family: var(--mono); font-size: 0.78rem; word-break: break-all; color: var(--navy); }
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; border: 1px solid var(--line);
+  background: var(--bg-2); color: var(--text-2);
+}
+.badge.live { background: var(--green-soft); color: var(--green); border-color: rgba(13,122,79,.25); }
+.badge.warn { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+.prose h1 { font-size: 1.7rem; font-weight: 850; letter-spacing: -0.02em; margin: 1.6em 0 0.5em; }
+.prose h2 { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.015em; margin: 1.8em 0 0.55em; padding-bottom: 6px; border-bottom: 1px solid var(--line); color: var(--navy); }
+.prose h3 { font-size: 1.05rem; font-weight: 750; margin: 1.3em 0 0.4em; color: var(--navy-2); }
+.prose h4 { font-size: 0.95rem; font-weight: 700; margin: 1.1em 0 0.35em; }
+.prose p { margin: 0.65em 0; color: var(--text-2); }
+.prose li { margin: 0.28em 0; color: var(--text-2); }
+.prose ul, .prose ol { padding-left: 1.3em; }
+.prose blockquote {
+  margin: 1em 0; padding: 10px 14px; border-left: 3px solid var(--navy);
+  background: var(--bg-2); color: var(--text-2); border-radius: 0 var(--radius) var(--radius) 0;
+}
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+.prose table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.88rem; background: var(--panel); }
+.prose th, .prose td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.prose th { background: var(--navy); color: #fff; font-weight: 700; }
+.prose tr:nth-child(even) td { background: var(--bg-2); }
+.prose strong { color: var(--text); }
+.prose em { color: var(--text-2); }
+.foot {
+  margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 0.82rem; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+@media (max-width: 640px) {
+  .addr-row { grid-template-columns: 1fr; gap: 2px; }
+  .doc-top { padding: 10px 14px; }
+}
+</style>
+</head>
+<body>
+
+<header class="doc-top">
+  <a class="brand" href="/">
+    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M10 14V10.5a6 6 0 0 1 12 0V14" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><rect x="5.5" y="13" width="21" height="16" rx="4.5" fill="#ffffff"/><circle cx="16" cy="20" r="2.4" fill="#0B1F3A"/><rect x="15" y="21" width="2" height="4.2" rx="1" fill="#0B1F3A"/></svg>
+    Lockwork
+  </a>
+  <div class="links">
+    <a href="/pitch">Pitch</a>
+    <a href="/whitepaper">White paper</a>
+    <a href="/package">Package</a>
+    <a href="/feed">Feed</a>
+    <a href="/#/app">Open demo</a>
+    <span class="pill">Base Sepolia live</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+<div class="hero-card">
+  <h1>Pitch deck</h1>
+  <p class="sub">Contest-to-hire clearinghouse. Hire / seat copy (#20). Naming buys dropped.</p>
+  <div class="badge-row">
+    <span class="badge live">On-chain un-simulated · Base Sepolia</span>
+    <span class="badge warn">Custodial still simulated</span>
+    <span class="badge">250 bps · $79 seats · depth ≤ 3</span>
+  </div>
+  <dl class="addr-grid">
+    <div class="addr-row"><dt>Escrow</dt><dd><a href="https://sepolia.basescan.org/address/0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722" target="_blank" rel="noopener">0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</a></dd></div>
+    <div class="addr-row"><dt>feeRecipient</dt><dd>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</dd></div>
+    <div class="addr-row"><dt>Live app</dt><dd><a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a></dd></div>
+  </dl>
+</div>
+
+<article class="prose">
+<h1 id="lockwork-pitch-deck-outline">Lockwork — Pitch Deck Outline</h1>
+<p><em>Make Money draft · 2026-10-01 · Spine: ECONOMIC_FRAMEWORK.md §5</em><br />
+<em>Brand: Lock the payout. Ship the work. Hire the winner.</em><br />
+<em>Live: <a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a> — Base Sepolia escrow LIVE; custodial still simulated; seats not yet billed.</em><br />
+<em>Copy rule (#20): prefer “hired into company / seat” over EoR-looking “employee.”</em><br />
+<em>Shareable package: <a href="https://lockwork-dun.vercel.app/pitch">pitch</a> · <a href="https://lockwork-dun.vercel.app/whitepaper">white paper</a> · <a href="https://lockwork-dun.vercel.app/package">index</a></em></p>
+<p><strong>Live config (Vercel <code>/api/config</code>, 2026-10-01 evening ET):</strong> 250 bps leaf-outward · 500 bps placement · $79 seats · depth ≤ 3 · <code>chain.enabled: true</code> · escrow <code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> · treasury / <code>fee_recipient</code> <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> · Base Sepolia · on-chain <code>simulated: false</code> · custodial still simulated</p>
+<hr />
+<h2 id="slide-1-title">Slide 1 — Title</h2>
+<p><strong>Title:</strong> Lockwork</p>
+<p><strong>Bullets:</strong>
+- Lock the payout. Ship the work. Hire the winner.
+- Contest-to-hire clearinghouse — sealed purse → ship artifact → one winner hired into the company
+- Live demo: https://lockwork-dun.vercel.app/</p>
+<p><strong>Speaker notes:</strong>
+Open on the brand line, not a category label. We are not “Upwork for crypto.” We sell certainty of payout that converts into a hire. Flag the live URL early: treasury + Base Sepolia escrow are live; on-chain rail is un-simulated on testnet; custodial still simulated; seat billing (#4) still stubbing. Keep “hire / company seat” language; avoid employment-agency framing.</p>
+<hr />
+<h2 id="slide-2-problem">Slide 2 — Problem</h2>
+<p><strong>Title:</strong> Interview theater. Unpaid contests. Escrow that never hires.</p>
+<p><strong>Bullets:</strong>
+- Marketplaces sell hours and bids — workers risk time for maybe-pay
+- Classic contest sites harvest speculative free labor; prize optional or opaque
+- “Escrow” in most products is custody theater — no hire, no seat, no reputation that compounds
+- Founders still run interview theater for a single shippable bot, script, or automation job</p>
+<p><strong>Speaker notes:</strong>
+Name the three failures in one breath: Upwork/Fiverr (hours), 99designs-style contests (unpaid work), and soft escrow that never becomes a hire. Beachhead pain is concrete: a solo founder needs a $2k–$10k deliverable this week and might keep the winner on a seat. Do not lead with crypto ideology — lead with wasted time and unpaid work.</p>
+<hr />
+<h2 id="slide-3-insight">Slide 3 — Insight</h2>
+<p><strong>Title:</strong> Price certainty. Bid = work. Hire is the conversion event.</p>
+<p><strong>Bullets:</strong>
+- Money is a <strong>sealed commitment</strong> before competition is serious
+- The bid is the <strong>artifact</strong> (ship the work), not a price auction
+- Exactly <strong>one winner</strong> is paid <em>and</em> hired into that employer’s company / seat
+- Public reputation compounds matching; GMV stays private (no fee gaming)</p>
+<p><strong>Speaker notes:</strong>
+This is the category claim. Lockwork sells the conversion event: locked payout → ship → hire. Contrast table (if designing visuals): marketplace vs contest vs Lockwork. Emphasize “hired into company / seat” — the win is not a prize file; it is a production relationship billed as a company seat.</p>
+<hr />
+<h2 id="slide-4-product">Slide 4 — Product</h2>
+<p><strong>Title:</strong> Lock → Ship → Hire</p>
+<p><strong>Bullets:</strong>
+- Employer posts a job, locks full payout (custodial and/or Base USDC)
+- Humans and bots compete by submitting the work; employer reviews read-only demos
+- Employer picks exactly one winner → release → winner gets a <strong>company seat</strong>
+- Company OS nests sub-teams and jobs (depth ≤ 3); sponsors and plugins attach later
+- Live loop shipped on demo: post → fund → submit → review → pay-one</p>
+<p><strong>Speaker notes:</strong>
+Walk the core loop in 30 seconds. Show clearinghouse UI vibe (navy <code>#0B1F3A</code> / slate / white) if screenshot available. Hybrid escrow = one state machine, two adapters. Nested jobs carve budget inside the company tree without feeling like a new charge. Plugins (IDE/repo stubs) and sponsors are second-order — do not derail the demo story.</p>
+<hr />
+<h2 id="slide-5-unit-economics">Slide 5 — Unit economics</h2>
+<p><strong>Title:</strong> 250 bps + $79 seats + 500 bps placement</p>
+<p><strong>Bullets:</strong>
+- <strong>Release fee:</strong> 250 bps only on outward winner pay (carve-outs 0, refunds 0)
+- <strong>Seats:</strong> $79/mo after hire — contest CAC → company ARR
+- <strong>Placement:</strong> 500 bps when financing/sponsor capital attaches
+- <strong>Nesting:</strong> depth ≤ 3; residual escrow only; no double-tax on idle locked dollars
+- Early snapshot (illustrative): ~200 × $2k jobs → ~$15.7k/mo stack; seats alone ~$64k ARR</p>
+<p><strong>Speaker notes:</strong>
+Fee prints cash on success; seats print multiple. Do not pitch float. Stress: do not hike fee to “fix” Seed — ship seat billing. Nested example in one line: $10k root, carve $4k+$3k, one $4k leaf pays → platform $100, not $275/$350 under worse policies. Full tables live in Genius exhibit (<code>WHITEPAPER_UNIT_ECON_EXHIBIT.md</code>). Assumptions are illustrative until Dante sets vertical targets.</p>
+<hr />
+<h2 id="slide-6-trust-architecture">Slide 6 — Trust architecture</h2>
+<p><strong>Title:</strong> Public reputation. Private GMV.</p>
+<p><strong>Bullets:</strong>
+- <strong><code>/</code> Company OS</strong> — money, escrow, wallet Connect/Approve/Lock, fee copy, nested budgets
+- <strong><code>/feed</code> + <code>/u/:handle</code></strong> — jobs completed, badges, demerits only (dollar-free by design)
+- Social credit + one revision round replaces a human dispute desk in v1 (#24)
+- Status compounds matching without leaking pricing power</p>
+<p><strong>Speaker notes:</strong>
+Trust split is a product feature, not a missing dashboard. Investors who want “show GMV on profiles” get the wrong product — that invites fee gaming and pricing leaks. v1: dispute desk flag stays off; social-credit-only story (see SOCIAL_CREDIT.md). Employer reputation symmetry is on the roadmap (#7).</p>
+<hr />
+<h2 id="slide-7-rails">Slide 7 — Rails</h2>
+<p><strong>Title:</strong> Custodial + Base USDC. One fee rule. Treasury takes the skim.</p>
+<p><strong>Bullets:</strong>
+- Shared escrow states: draft → funded → in_review → paid | refunded
+- Custodial adapter (card/balance) + on-chain adapter (Base USDC, <code>LockworkEscrow.sol</code>)
+- Fee incidence identical on both rails (D1 leaf-outward)
+- <strong><code>feeRecipient</code> = Dante treasury (LIVE)</strong> <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> — never the deploy/hot wallet
+- <strong>Escrow LIVE on Base Sepolia:</strong> <code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> (<a href="https://sepolia.basescan.org/address/0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722">Basescan</a>)
+- On-chain <code>simulated: false</code>; <strong>custodial still simulated</strong>; seat billing (#4) and filmed lock→release smoke still open</p>
+<p><strong>Speaker notes:</strong>
+Honest about hybrid status. Treasury + Sepolia escrow are live (Dante-confirmed treasury). Remaining: filmed lock→release smoke, custodial un-simulate, seat billing live, Base mainnet. Do not claim Base mainnet or invent tx receipts. Crypto Bro chapter has the full architecture for appendix / deep dive.</p>
+<hr />
+<h2 id="slide-8-gtm-beachhead">Slide 8 — GTM beachhead</h2>
+<p><strong>Title:</strong> Solo founders &amp; small studios — $2k–$10k ship-to-hire</p>
+<p><strong>Bullets:</strong>
+- ICP: founder/studio lead who needs one concrete deliverable this week and might keep the winner
+- Beachhead jobs: bots, scripts, automation (IDE/repo plugins demo-real)
+- Closed alpha: invite-only companies; link jobs; escrow funded / week as north star
+- Narrative: <em>Lock pay. Compete by shipping. One hire into the company.</em>
+- Not first: enterprise procurement, $20 commodity gigs, open-ended retainers</p>
+<p><strong>Speaker notes:</strong>
+Channels: builder X, Indie Hackers, crypto/builder Discords — not LinkedIn spray. Success metrics: funded jobs/week, winner-selected %, seat keep intent (even pre-billing). Case study (#8) still needed for receipts — placeholder until Dante + Make Money land one ICP story.</p>
+<hr />
+<h2 id="slide-9-the-ask-placeholder">Slide 9 — The Ask (placeholder)</h2>
+<p><strong>Title:</strong> Ask — <em>fill when Dante decides</em></p>
+<p><strong>Bullets (placeholders):</strong>
+- [ ] Alpha company seats / closed-alpha invite capacity
+- [ ] Escrow volume commitment (seed jobs on real rail once live)
+- [x] Treasury bootstrap — Dante treasury live <code>0x47D0…844C</code> (confirmed 1:1 with Crypto Bro)
+- [ ] Naming pack — <strong>DROPPED</strong>; stay on Vercel URL (do not push domain buys)
+- [ ] Optional: advisory / design-partner studios for beachhead vertical</p>
+<p><strong>Speaker notes:</strong>
+Do not invent a raise number. Treasury is live; ask slide still scaffolded until Dante sets the instrument (alpha seats vs escrow volume vs capital). Frame remaining gates honestly: seat billing, custodial live, filmed Sepolia smoke, then Base mainnet.</p>
+<hr />
+<h2 id="slide-10-closing-appendix-cue">Slide 10 — Closing / Appendix cue</h2>
+<p><strong>Title:</strong> Lockwork</p>
+<p><strong>Bullets:</strong>
+- Lock the payout. Ship the work. Hire the winner.
+- Demo: https://lockwork-dun.vercel.app/
+- Deep dive: white paper (<code>WHITEPAPER.md</code>) · on-chain chapter · unit-econ exhibit
+- Contact / next step: <em>[Dante / Make Money — fill]</em></p>
+<p><strong>Speaker notes:</strong>
+Leave them with the brand line and honest live status: Sepolia escrow + treasury live; custodial sim + seats still open. Offer white paper for fee math and rail detail. Q&amp;A traps: employment-agency regulation (use hire/seat copy; counsel pass #17), “when is money real?” (Sepolia live → filmed smoke → custodial/seats → Base mainnet), “why not higher take-rate?” (seats &gt; fee hike).</p>
+<hr />
+<h2 id="design-production-notes">Design / production notes</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Guidance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Visual system</td>
+<td>Navy <code>#0B1F3A</code> / slate / white (clearinghouse UI)</td>
+</tr>
+<tr>
+<td>Logo</td>
+<td>Padlock or sealed purse primary; gear tooth secondary only</td>
+</tr>
+<tr>
+<td>Charts</td>
+<td>Unit-econ Early stack bar; nested $10k tree one-pager from Genius exhibit</td>
+</tr>
+<tr>
+<td>Screenshots</td>
+<td>OS fund/lock; <code>/feed</code> dollar-free; wallet Connect/Approve/Lock (Sepolia); Basescan escrow</td>
+</tr>
+<tr>
+<td>Language ban</td>
+<td>Avoid leading with “employee / EoR / staffing agency”; prefer hired into company / seat</td>
+</tr>
+<tr>
+<td>Honesty</td>
+<td>Every money slide: “Sepolia live; custodial sim; seats not billed” footnote if needed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ownership">Ownership</h2>
+<table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This outline</td>
+<td>Make Money</td>
+<td><strong>Draft landed 2026-10-01</strong></td>
+</tr>
+<tr>
+<td>Slide design / Figma</td>
+<td>Make Money (or design partner)</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Ask numbers</td>
+<td>Dante</td>
+<td>Blocked</td>
+</tr>
+<tr>
+<td>ICP case receipts (#8)</td>
+<td>Dante + Make Money</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Unit-econ exhibit</td>
+<td>Genius</td>
+<td>Ready — fold into WP</td>
+</tr>
+<tr>
+<td>On-chain appendix</td>
+<td>Crypto Bro</td>
+<td>Ready — fold into WP</td>
+</tr>
+</tbody>
+</table>
+<p><em>Do not push Lockwork app or buy domains from this artifact. Markdown-only under <code>make-money-app/</code>.</em></p>
+<p><em>Naming buys dropped. Shareable HTML on lockwork-dun.vercel.app: <code>/pitch</code> · <code>/whitepaper</code> · <code>/package</code>.</em></p>
+</article>
+<footer class="foot">
+  <span>Lockwork · Lock the payout. Ship the work. Hire the winner.</span>
+  <span><a href="/package">Package index</a> · <a href="/">App</a></span>
+</footer>
+</main>
+</body>
+</html>

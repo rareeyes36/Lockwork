@@ -1,0 +1,1701 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>White paper · Lockwork</title>
+  <meta name="description" content="Lockwork white paper — contest-to-hire primitive, D1 fees, hybrid escrow, live Base Sepolia addresses.">
+  <meta name="theme-color" content="#0B1F3A">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --bg: #f4f6f9; --bg-2: #eef1f6; --panel: #ffffff; --line: #d0d5de; --line-2: #b8c0cc;
+  --text: #0b1f3a; --text-2: #334155; --muted: #64748b; --faint: #94a3b8;
+  --navy: #0b1f3a; --navy-2: #15355c; --link: #1b4f8a; --green: #0d7a4f;
+  --green-soft: rgba(13,122,79,.1); --radius: 4px;
+  --font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, pre { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--bg-2); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--line); }
+pre { background: var(--navy); color: #e2e8f0; padding: 14px 16px; border-radius: var(--radius); overflow-x: auto; border: 1px solid var(--line); }
+pre code { background: transparent; border: 0; padding: 0; color: inherit; }
+.doc-top {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 20px; background: var(--navy); color: #fff;
+  border-bottom: 1px solid #15355c;
+}
+.doc-top a { color: #cbd5e1; font-size: 0.82rem; font-weight: 600; }
+.doc-top a:hover { color: #fff; text-decoration: none; }
+.doc-top .brand { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em; }
+.doc-top .links { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.doc-top .pill {
+  display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.12); color: #e2e8f0; font-size: 0.72rem; font-weight: 700;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px 80px; }
+.hero-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px 18px; margin: 0 0 28px; box-shadow: 0 1px 2px rgba(11,31,58,.06);
+}
+.hero-card h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 1.9rem); font-weight: 850; letter-spacing: -0.02em; }
+.hero-card .sub { color: var(--muted); margin: 0 0 12px; font-size: 0.95rem; }
+.addr-grid { display: grid; gap: 8px; margin-top: 10px; }
+.addr-row { display: grid; grid-template-columns: 140px 1fr; gap: 8px; font-size: 0.82rem; }
+.addr-row dt { color: var(--muted); font-weight: 600; }
+.addr-row dd { margin: 0; font-family: var(--mono); font-size: 0.78rem; word-break: break-all; color: var(--navy); }
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 700; border: 1px solid var(--line);
+  background: var(--bg-2); color: var(--text-2);
+}
+.badge.live { background: var(--green-soft); color: var(--green); border-color: rgba(13,122,79,.25); }
+.badge.warn { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+.prose h1 { font-size: 1.7rem; font-weight: 850; letter-spacing: -0.02em; margin: 1.6em 0 0.5em; }
+.prose h2 { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.015em; margin: 1.8em 0 0.55em; padding-bottom: 6px; border-bottom: 1px solid var(--line); color: var(--navy); }
+.prose h3 { font-size: 1.05rem; font-weight: 750; margin: 1.3em 0 0.4em; color: var(--navy-2); }
+.prose h4 { font-size: 0.95rem; font-weight: 700; margin: 1.1em 0 0.35em; }
+.prose p { margin: 0.65em 0; color: var(--text-2); }
+.prose li { margin: 0.28em 0; color: var(--text-2); }
+.prose ul, .prose ol { padding-left: 1.3em; }
+.prose blockquote {
+  margin: 1em 0; padding: 10px 14px; border-left: 3px solid var(--navy);
+  background: var(--bg-2); color: var(--text-2); border-radius: 0 var(--radius) var(--radius) 0;
+}
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+.prose table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.88rem; background: var(--panel); }
+.prose th, .prose td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.prose th { background: var(--navy); color: #fff; font-weight: 700; }
+.prose tr:nth-child(even) td { background: var(--bg-2); }
+.prose strong { color: var(--text); }
+.prose em { color: var(--text-2); }
+.foot {
+  margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 0.82rem; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+@media (max-width: 640px) {
+  .addr-row { grid-template-columns: 1fr; gap: 2px; }
+  .doc-top { padding: 10px 14px; }
+}
+</style>
+</head>
+<body>
+
+<header class="doc-top">
+  <a class="brand" href="/">
+    <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path d="M10 14V10.5a6 6 0 0 1 12 0V14" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><rect x="5.5" y="13" width="21" height="16" rx="4.5" fill="#ffffff"/><circle cx="16" cy="20" r="2.4" fill="#0B1F3A"/><rect x="15" y="21" width="2" height="4.2" rx="1" fill="#0B1F3A"/></svg>
+    Lockwork
+  </a>
+  <div class="links">
+    <a href="/pitch">Pitch</a>
+    <a href="/whitepaper">White paper</a>
+    <a href="/package">Package</a>
+    <a href="/feed">Feed</a>
+    <a href="/#/app">Open demo</a>
+    <span class="pill">Base Sepolia live</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+<div class="hero-card">
+  <h1>White paper</h1>
+  <p class="sub">Primitive · nested fees · hybrid rails · trust split · regulatory posture · roadmap. Chapters folded below.</p>
+  <div class="badge-row">
+    <span class="badge live">On-chain un-simulated · Base Sepolia</span>
+    <span class="badge warn">Custodial still simulated</span>
+    <span class="badge">250 bps · $79 seats · depth ≤ 3</span>
+  </div>
+  <dl class="addr-grid">
+    <div class="addr-row"><dt>Escrow</dt><dd><a href="https://sepolia.basescan.org/address/0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722" target="_blank" rel="noopener">0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</a></dd></div>
+    <div class="addr-row"><dt>feeRecipient</dt><dd>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</dd></div>
+    <div class="addr-row"><dt>Live app</dt><dd><a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a></dd></div>
+  </dl>
+</div>
+
+<article class="prose">
+<h1 id="lockwork-white-paper">Lockwork White Paper</h1>
+<p><em>Draft body · Make Money · 2026-10-01</em><br />
+<em>Product: Lockwork · Brand line: Lock the payout. Ship the work. Hire the winner.</em><br />
+<em>Live demo: <a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a> — Base Sepolia escrow live; custodial still simulated; seat billing not yet charged.</em><br />
+<em>Audience: investors, design partners, serious operators.</em><br />
+<em>Copy rule (#20): prefer “hired into company / seat” over EoR-looking “employee.”</em><br />
+<em>Shareable package: <a href="https://lockwork-dun.vercel.app/pitch">pitch</a> · <a href="https://lockwork-dun.vercel.app/whitepaper">white paper</a> · <a href="https://lockwork-dun.vercel.app/package">index</a></em></p>
+<p><strong>Companion chapters (folded by reference — read in full):</strong>
+- Crypto Bro — On-chain escrow &amp; fee architecture → <a href="#on-chain-chapter"><code>WHITEPAPER_ONCHAIN_CHAPTER.md</code></a>
+- Genius — Unit economics &amp; nested-fee exhibit → <a href="#unit-econ-exhibit"><code>WHITEPAPER_UNIT_ECON_EXHIBIT.md</code></a> (also <a href="#unit-econ-chapter"><code>WHITEPAPER_UNIT_ECON_CHAPTER.md</code></a>)</p>
+<p><strong>Live config (Vercel <code>/api/config</code>, 2026-10-01 evening ET):</strong> platform fee <strong>250 bps</strong> leaf-outward · placement <strong>500 bps</strong> · seats <strong>$79</strong> · nesting depth <strong>≤ 3</strong> · <code>chain.enabled: true</code> · Base Sepolia · escrow <code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> · <code>fee_recipient</code> / treasury <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> · <code>feeBps</code> 250 · on-chain <code>simulated: false</code> · custodial still <code>simulated: true</code> · <code>demo_reset</code> may still be true</p>
+<hr />
+<h2 id="abstract">Abstract</h2>
+<p>Lockwork is a contest-to-hire clearinghouse. Employers lock a sealed payout before competition is serious; workers (humans and bots) compete by shipping the artifact — the bid <em>is</em> the work; exactly one winner is paid and <strong>hired into that employer’s company</strong> on a billable seat. Hybrid escrow (custodial ledger + Base USDC) enforces the purse under one fee rule: <strong>2.5% only on outward release to a winner</strong>. Internal budget carve-outs and refunds are <strong>0 bps</strong>. Public surfaces show reputation without GMV; money lives in the company OS. This paper states the primitive, the nested fee math, the rail architecture, the trust split, sponsor economics, regulatory posture, and the roadmap from Sepolia live escrow to Base mainnet and custodial/seat live settlement.</p>
+<hr />
+<h2 id="table-of-contents-framework-6">Table of contents (framework §6)</h2>
+<ol>
+<li><a href="#1-contest-to-hire-primitive-vs-marketplaces">Contest-to-hire primitive vs marketplaces</a></li>
+<li><a href="#2-d1-nested-fee-math--leaf-outward-only-rule">D1 nested fee math &amp; leaf-outward-only rule</a></li>
+<li><a href="#3-hybrid-escrow-state-machine-custodial--on-chain-adapters">Hybrid escrow state machine</a></li>
+<li><a href="#4-company--sub-team--job-tree--seat-roll-up">Company / sub-team / job tree &amp; seat roll-up</a></li>
+<li><a href="#5-publicprivate-data-split--social-credit-enforcement">Public/private data split &amp; social-credit enforcement</a></li>
+<li><a href="#6-sponsor-types--placement-fee">Sponsor types &amp; placement fee</a></li>
+<li><a href="#7-on-chain-design-base-usdc-lockworkescrow-feerecipient">On-chain design (folded Crypto Bro chapter)</a></li>
+<li><a href="#8-regulatory--trust-risks-custody-hireseat-language">Regulatory &amp; trust risks</a></li>
+<li><a href="#9-roadmap-sim--sepolia--base-mainnet-pluginbot-tolls">Roadmap</a></li>
+<li><a href="#10-unit-economics--nested-fee-exhibit-genius">Unit economics exhibit (folded Genius)</a></li>
+<li><a href="#11-smoke-evidence-pack-grok--25-under-10">Smoke evidence pack (placeholders)</a></li>
+<li><a href="#12-open-items--ownership">Open items &amp; ownership</a></li>
+</ol>
+<hr />
+<h2 id="1-contest-to-hire-primitive-vs-marketplaces">1. Contest-to-hire primitive vs marketplaces</h2>
+<h3 id="thesis">Thesis</h3>
+<p>Lockwork sells <strong>certainty of payout that converts into a hire</strong> — not billable hours, not reverse auctions, and not unpaid speculative contests.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>What the worker risks</th>
+<th>What the employer buys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upwork / Fiverr</td>
+<td>Time for maybe-pay</td>
+<td>Hours / gigs</td>
+</tr>
+<tr>
+<td>Classic contest sites</td>
+<td>Unpaid work for maybe-prize</td>
+<td>Speculative free labor</td>
+</tr>
+<tr>
+<td><strong>Lockwork</strong></td>
+<td>Time against a <strong>sealed purse</strong></td>
+<td><strong>Locked payout + one hire into the company</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="core-loop">Core loop</h3>
+<ol>
+<li>Employer creates a <strong>company</strong> (workspace root) and posts a <strong>job</strong> (clear requirements, deadline).</li>
+<li>Employer <strong>locks</strong> the full payout in escrow (custodial and/or Base USDC).</li>
+<li>Workers submit <strong>work</strong> — files, demos, repos — not price bids.</li>
+<li>Employer reviews submissions in read-only demo view.</li>
+<li>Employer selects <strong>exactly one</strong> winner.</li>
+<li>Escrow <strong>releases</strong> to the winner; winner is <strong>hired into the company</strong> on a seat (<code>employments</code> / seat billing).</li>
+<li>Optional: job-scoped bots shut down or promote; sponsors and plugins attach to production.</li>
+</ol>
+<p><strong>Brand line (locked):</strong> Lock the payout. Ship the work. Hire the winner.</p>
+<h3 id="why-this-is-a-category-not-a-feature">Why this is a category, not a feature</h3>
+<p>Marketplaces optimize matching price to hours. Contest sites optimize free optionality for the poster. Lockwork optimizes <strong>conversion</strong>: locked capital → shipped artifact → retained seat. Fee, reputation, and GTM all hang off that conversion event. A functional Lockwork is not “pretty UI + sim escrow”; it is lock real value → ship → pay one → seat converts → reputation updates publicly without showing dollars.</p>
+<hr />
+<h2 id="2-d1-nested-fee-math-leaf-outward-only-rule">2. D1 nested fee math &amp; leaf-outward-only rule</h2>
+<p><strong>Decision status:</strong> DECIDED for alpha (OPEN_DECISIONS D1; REFUND_POLICY).</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Platform fee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lock (any rail)</td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>Internal <code>parent_carveout</code></td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>Expansion lock (new capital)</td>
+<td><strong>0</strong> at lock; fee when that capital later releases outward</td>
+</tr>
+<tr>
+<td>Outward <code>release</code> to a winner</td>
+<td><strong>250 bps (2.5%)</strong></td>
+</tr>
+<tr>
+<td>Refund (<code>expired_refunded</code> / <code>cancelled_refunded</code>)</td>
+<td><strong>0</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>External copy:</strong> “2.5% when a winner is paid out of escrow — not when you split a job.”</p>
+<p>Integer math (USDC 6-dec style): <code>fee_amount = amount * 250 / 10000</code> (floor); winner net = <code>amount − fee_amount</code>.</p>
+<h3 id="nested-example-10k-root">Nested example ($10k root)</h3>
+<p>Root locks <strong>$10,000</strong>. Carve-outs <strong>$4,000</strong> + <strong>$3,000</strong> to children (<strong>$0</strong> fee on transfers). One leaf ($4,000) pays a winner → platform fee <strong>$100</strong>; winner net <strong>$3,900</strong>. If both leaves later pay under D1: fee = <strong>$175</strong>. Residual root capital fees only if/when paid outward to a root-level winner. Depth cap <strong>3</strong>; no cycles (D4).</p>
+<p><strong>Reject:</strong> charging on every carve-out + leaf ($275) or double-dipping root + leaf ($350) — same capital taxed twice destroys nesting trust.</p>
+<p>Full scenario tables, Early stack snapshot, and stress findings: see <strong>§10</strong> (Genius exhibit).</p>
+<hr />
+<h2 id="3-hybrid-escrow-state-machine-custodial-on-chain-adapters">3. Hybrid escrow state machine (custodial + on-chain adapters)</h2>
+<p>One job escrow state machine; two adapters. Rail chosen at fund time; no mid-job bridge in v1.</p>
+<pre><code>draft → funded → in_review → paid
+                ↘ expired_refunded
+                ↘ cancelled_refunded
+                ↘ disputed (automated social-credit path; no human desk in v1)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Adapter</th>
+<th>Lock</th>
+<th>Hold</th>
+<th>Release / refund</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Custodial</strong></td>
+<td>Card / bank / platform balance</td>
+<td>Ledger <code>hold</code></td>
+<td>Credit winner / return to employer</td>
+</tr>
+<tr>
+<td><strong>On-chain</strong></td>
+<td>Wallet deposits USDC into escrow</td>
+<td>Contract balance by <code>escrowRef</code></td>
+<td>Contract pays winner or refunds employer</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Adapter surface:</strong> <code>lock</code> · <code>release</code> · <code>refund</code> · <code>status</code>. Job fields: <code>rail</code>, <code>escrow_ref</code>, <code>amount</code>, <code>currency</code>, <code>state</code>.</p>
+<p><strong>Who may trigger:</strong> Employer locks; system/employer releases after one winner; system on expiry / employer on allowed cancel refunds; <strong>workers never touch escrow</strong>.</p>
+<p><strong>Refund cascade (D2):</strong> bottom-up, deterministic — children terminal before parent refunds; carve-out restores to parent remaining; expansion returns to expansion payer; <strong>0 bps</strong> always on refund paths. No fee clawback (fee never charged on refund).</p>
+<p>Shipping order: shared state machine → custodial-sim (shipped for UI completeness) → custodial-live → on-chain as second path without rewriting jobs.</p>
+<p>Detail and live config honesty: <strong>§7</strong> / <a href="#on-chain-chapter"><code>WHITEPAPER_ONCHAIN_CHAPTER.md</code></a>.</p>
+<hr />
+<h2 id="4-company-sub-team-job-tree-seat-roll-up">4. Company / sub-team / job tree &amp; seat roll-up</h2>
+<h3 id="vocabulary">Vocabulary</h3>
+<ul>
+<li><strong>Company</strong> = root unit (schema <code>workspaces</code> in v1 — copy says company, never “team” at the top).</li>
+<li><strong>Sub-teams</strong> nest under a company only (depth ≤ 3).</li>
+<li>People hold roles: <strong>employer</strong>, <strong>winner hired into company / seat</strong>, <strong>sponsor</strong> — not generic “users” in product copy.</li>
+<li>Jobs hang off company or sub-team; funded jobs may spawn sub-jobs (parent carve-out or expansion).</li>
+</ul>
+<h3 id="authority-d3">Authority (D3)</h3>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Who</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fund / lock</td>
+<td>Employer with fund permission on the company</td>
+</tr>
+<tr>
+<td>Pick winner</td>
+<td>Job’s posting employer; sponsors never veto</td>
+</tr>
+<tr>
+<td>Seat / hire link</td>
+<td>Always on <code>company_id</code> (root)</td>
+</tr>
+<tr>
+<td>Seat billing</td>
+<td>Billed to the <strong>company</strong>, not the sub-team</td>
+</tr>
+</tbody>
+</table>
+<p>Win → company seat (<code>employments</code>); billing rolls up after custodial/seat processor is live. Default stub price: <strong>$79/mo</strong>. Multiple leaf wins under one parent may create multiple company seats; fee still once per outward payout.</p>
+<hr />
+<h2 id="5-publicprivate-data-split-social-credit-enforcement">5. Public/private data split &amp; social-credit enforcement</h2>
+<h3 id="trust-split">Trust split</h3>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Shows</th>
+<th>Hides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company OS (<code>/</code>)</td>
+<td>Escrow state, Connect/Approve/Lock, fee copy, nested budgets</td>
+<td>— (money belongs here)</td>
+</tr>
+<tr>
+<td>Public <code>/feed</code>, <code>/u/:handle</code></td>
+<td>Jobs completed, badges, demerits, employment-days style facts</td>
+<td>Escrow amounts, GMV, fees, purse sizes</td>
+</tr>
+</tbody>
+</table>
+<p>Status compounds matching without leaking pricing power or inviting fee gaming.</p>
+<h3 id="reputation-social-credit-v1-posture">Reputation &amp; social credit (v1 posture)</h3>
+<ul>
+<li>Facts: wins, employment retention days; later gates weight retention over raw wins (anti-farm).</li>
+<li>Social credit starts at 100; symmetric demerits on finalized disputes; one revision round; match blocks after post-pay worker disputes.</li>
+<li><strong>No human dispute desk in v1</strong> (#24). Automated credit + matching separation replaces adjudication theater.</li>
+<li>Fee clawback remains rare by design (fee only on successful outward release).</li>
+</ul>
+<p>See <code>REPUTATION.md</code>, <code>SOCIAL_CREDIT.md</code>, <code>PROFILE_FEED.md</code>.</p>
+<hr />
+<h2 id="6-sponsor-types-placement-fee">6. Sponsor types &amp; placement fee</h2>
+<p>Sponsors attach to a company or job. They do <strong>not</strong> pick the winner.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Contribution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contributing</td>
+<td>Labor, reviews, assets</td>
+</tr>
+<tr>
+<td>Financing</td>
+<td>Escrow co-lock / top-up</td>
+</tr>
+<tr>
+<td>Software</td>
+<td>Seats, licenses, plugin access</td>
+</tr>
+<tr>
+<td>Materials / services</td>
+<td>PoD, manufacture, shipping</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Placement fee:</strong> <strong>500 bps</strong> of financing contribution when that path is live (separate from release fee). Optional upside until financing UX ships — do not block the core loop on sponsors (#14).</p>
+<p>Later income layers (not v1): plugin marketplace take-rate, bot tolls, software sponsors at scale.</p>
+<hr />
+<h2 id="7-on-chain-design-base-usdc-lockworkescrow-feerecipient">7. On-chain design (Base USDC, LockworkEscrow, feeRecipient)</h2>
+<blockquote>
+<p><strong>Fold-in:</strong> The full Crypto Bro chapter is the canonical deep dive.<br />
+<strong>Read in full:</strong> <a href="#on-chain-chapter"><code>WHITEPAPER_ONCHAIN_CHAPTER.md</code></a></p>
+</blockquote>
+<h3 id="summary-for-body-readers">Summary for body readers</h3>
+<ul>
+<li><strong>Target chain:</strong> Base L2 (mainnet <code>8453</code>; test Base Sepolia <code>84532</code>).</li>
+<li><strong>Asset:</strong> Native USDC (6 decimals); integer fee math only.</li>
+<li><strong>Contract:</strong> <code>LockworkEscrow.sol</code> <strong>LIVE on Base Sepolia</strong> at escrow <code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> (<a href="https://sepolia.basescan.org/address/0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722">Basescan</a>).</li>
+<li><strong>Events (minimum):</strong> <code>Locked</code>, <code>Released</code>, <code>Refunded</code>.</li>
+<li><strong>UI path:</strong> Connect → Approve USDC → Lock on fund (<code>/deploy.html</code> helper available).</li>
+<li><strong>Fee skim:</strong> on release to <code>feeRecipient</code>.</li>
+<li><strong><code>feeRecipient</code> / treasury (LIVE):</strong> <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> — Dante-confirmed treasury in 1:1 with Crypto Bro; <strong>never</strong> the deploy/hot wallet.</li>
+<li><strong>Live <code>/api/config</code> (2026-10-01 evening ET):</strong> <code>chain.enabled: true</code>, escrow + fee_recipient wired as above, Base Sepolia, on-chain <code>simulated: false</code>, <strong>custodial still simulated</strong>, <code>demo_reset</code> may still be true. Not Base mainnet.</li>
+<li>On-chain v1 escrows are <strong>flat</strong> job deposits; nested carve-outs remain custodial/ledger until a later policy moves trees on-chain. Fee <em>incidence</em> still follows D1 on every rail.</li>
+</ul>
+<h3 id="why-hybrid-beats-pure-tradfi-or-pure-contest-from-chapter">Why hybrid beats pure TradFi or pure contest (from chapter)</h3>
+<p>Hybrid is the minimum architecture that (a) proves the purse before work, (b) serves fiat-friendly and crypto-native settlement cultures, and (c) keeps fee incidence auditable under one rule set.</p>
+<p><em>Do not invent tx receipts, buy domains, deploy contracts, or flip production env from this document. Naming buys are dropped — stay on the Vercel URL.</em></p>
+<hr />
+<h2 id="8-regulatory-trust-risks-custody-hireseat-language">8. Regulatory &amp; trust risks (custody, hire/seat language)</h2>
+<p><em>Brief pass for backlog #17 — not legal advice; counsel review before external fundraising use.</em></p>
+<h3 id="posture">Posture</h3>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Draft posture</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Custodial rail</strong></td>
+<td>May implicate money-transmission / custody regimes depending on jurisdiction and fact pattern. Prefer <strong>on-chain for early crypto ICP</strong>; delay promising float yield; float stays internal-only and unpitched.</td>
+</tr>
+<tr>
+<td><strong>Hire / seat language</strong></td>
+<td>Product creates a <strong>company seat / hired role</strong> after a contest win. Avoid EoR, staffing-agency, and “we employ them for you” framing in deck/WP/marketing until counsel clears employment-adjacent claims (#20). Prefer: <em>hired into the company</em>, <em>company seat</em>, <em>winner join</em>.</td>
+</tr>
+<tr>
+<td><strong>Contest / prize characterization</strong></td>
+<td>Emphasize sealed purse + hire conversion, not speculative unpaid contests or gambling framing.</td>
+</tr>
+<tr>
+<td><strong><code>feeRecipient</code> custody</strong></td>
+<td>Treasury multisig (or equivalent); never single hot EOA for mainnet fees.</td>
+</tr>
+<tr>
+<td><strong>Public GMV</strong></td>
+<td>Kept private partly to reduce gaming; also reduces surface for misleading “earnings” claims on profiles.</td>
+</tr>
+<tr>
+<td><strong>Naming / trademark</strong></td>
+<td>Domain buys <strong>dropped</strong> for now — stay on Vercel URL; registration ≠ mark clearance.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="material-product-risks-non-legal">Material product risks (non-legal)</h3>
+<p>Spoofed winner oracle → authenticated selection only. Wrong chain/USDC → hard chain-id checks. Wallet friction → Base + clear Connect/Approve/Lock. Stuck funds → explicit refund paths; pause/rescue only with Dante-approved admin design. Testnet→mainnet gap → Sepolia escrow is live; filmed lock→release smoke + custodial un-simulate still required before Base mainnet.</p>
+<hr />
+<h2 id="9-roadmap-sim-sepolia-base-mainnet-pluginbot-tolls">9. Roadmap: sim → Sepolia → Base mainnet; plugin/bot tolls</h2>
+<p>Suggested cash order (Genius / backlog): <strong>1 → 2 → 4 → 14 → 9/10</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Treasury <code>feeRecipient</code></strong></td>
+<td><strong>DONE</strong> — Dante treasury <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> wired</td>
+</tr>
+<tr>
+<td><strong>2. Sepolia</strong></td>
+<td><strong>DONE (deploy)</strong> — escrow <code>0xa24D…C722</code> live; lock→release smoke receipt <strong>not yet filmed</strong></td>
+</tr>
+<tr>
+<td><strong>3. Seat billing live @ $79</strong></td>
+<td>Contest CAC → ARR — <strong>still open (#4)</strong></td>
+</tr>
+<tr>
+<td><strong>4. Un-simulate rails</strong></td>
+<td>On-chain un-simulated; <strong>custodial still simulated</strong>; turn off <code>demo_reset</code> on prod</td>
+</tr>
+<tr>
+<td><strong>14. Sponsor attach</strong></td>
+<td>500 bps placement live</td>
+</tr>
+<tr>
+<td><strong>Docs</strong></td>
+<td>This WP + pitch deck (Make Money)</td>
+</tr>
+<tr>
+<td><strong>Later</strong></td>
+<td>Base mainnet audit gate; ENS / <code>*.base.eth</code> identity; on-chain paid+hired attestation; plugin/bot tolls; employer reputation symmetry</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Near-term product gaps</strong> (not all WP-blocking): feed population from real job events; refund-cascade demo; one $2k–$10k ICP case study; turn off <code>demo_reset</code> on production; migration 022 on Vercel Postgres; closed-alpha invite path.</p>
+<p>On-chain Sepolia escrow + treasury are live; custodial remains simulated and seat billing is not yet charged. Lockwork is a <strong>live testnet settlement demo of the sealed-purse thesis</strong>, not yet Base mainnet or a fully live custodial clearinghouse.</p>
+<hr />
+<h2 id="10-unit-economics-nested-fee-exhibit-genius">10. Unit economics &amp; nested-fee exhibit (Genius)</h2>
+<blockquote>
+<p><strong>Fold-in:</strong> Genius exhibit is ready and is the canonical numeric appendix.<br />
+<strong>Read in full:</strong> <a href="#unit-econ-exhibit"><code>WHITEPAPER_UNIT_ECON_EXHIBIT.md</code></a><br />
+<strong>Also:</strong> <a href="#unit-econ-chapter"><code>WHITEPAPER_UNIT_ECON_CHAPTER.md</code></a> (same exhibit family)</p>
+</blockquote>
+<h3 id="body-digest-do-not-treat-as-audited-actuals">Body digest (do not treat as audited actuals)</h3>
+<p><strong>Income stack:</strong> 250 bps outward release · $79 seats · 500 bps placement · float internal-only · plugin/bot tolls later.</p>
+<p><strong>Assumptions (swappable):</strong> 15% refund/no-winner; 14-day avg lock; 4% float APR internal; 40% seat keep; 20% financing attach; 30% sponsor share when attached.</p>
+<p><strong>Early snapshot (200 × $2k/mo):</strong> release fee ~$8.5k + seats ~$5.4k + placement ~$1.2k + float ~$0.6k ≈ <strong>~$15.7k/mo</strong>; seat ARR alone ~<strong>$64k</strong>.</p>
+<p><strong>Stress rules:</strong> Keep 250 bps; ship seat billing before fee hikes; float is not a pitch; refund rate is the silent killer; sponsors optional until UX exists.</p>
+<p><strong>Instruments before next fee move (#19):</strong> released GMV, refund %, seat keep 30/60/90.</p>
+<p><em>Replace-me inputs when Dante sets vertical, target jobs/mo, avg escrow, real refund %, seat WTP.</em></p>
+<hr />
+<h2 id="11-smoke-evidence-pack-grok-25-under-10">11. Smoke evidence pack (Grok — #25 under #10)</h2>
+<p><em>Placeholders for live smoke checklist as WP evidence. Fill when Grok Bot runs the pack against production/demo; do not invent pass/fail.</em></p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Expected</th>
+<th>Evidence (link / screenshot / timestamp)</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/config</code> fee knobs</td>
+<td><code>platform_fee_bps: 250</code>, placement 500, seats 79, depth ≤ 3</td>
+<td><em>pending Grok smoke</em></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Rails honesty</td>
+<td><code>chain.enabled: true</code> on Base Sepolia; on-chain <code>simulated: false</code>; custodial still simulated</td>
+<td>config + Basescan escrow</td>
+<td>☑ testnet</td>
+</tr>
+<tr>
+<td>Dollar-free public</td>
+<td><code>/feed</code> and <code>/u/:handle</code> show no escrow $, GMV, or fee tallies</td>
+<td><em>pending</em></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Fee parity copy</td>
+<td>OS fee copy matches D1 (“2.5% when winner paid / not when you split”)</td>
+<td><em>pending</em></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Core loop reachable</td>
+<td>post → fund → submit → review → pay-one on demo</td>
+<td><em>pending</em></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Nested carve-out HUD</td>
+<td>Parent remaining; carve-out = $0 fee messaging (when shipped)</td>
+<td><em>pending</em></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Refund path 0 fee</td>
+<td>Cancel/expiry path shows no platform fee</td>
+<td><em>pending</em></td>
+<td>☐</td>
+</tr>
+<tr>
+<td><code>feeRecipient</code></td>
+<td>Treasury live <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> (Dante-confirmed)</td>
+<td>config</td>
+<td>☑</td>
+</tr>
+<tr>
+<td>Lock→release smoke</td>
+<td>Filmed Basescan receipt for lock → release with fee skim</td>
+<td><em>not yet filmed</em></td>
+<td>☐</td>
+</tr>
+<tr>
+<td>Seat charge</td>
+<td>$79 post-hire charge that sticks</td>
+<td><em>pending billing live (#4)</em></td>
+<td>☐</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Demo URL for evidence captures:</strong> https://lockwork-dun.vercel.app/</p>
+<p><em>When filled, this section becomes the investor-facing “we measured the demo” appendix under white paper item #10.</em></p>
+<hr />
+<h2 id="12-open-items-ownership">12. Open items &amp; ownership</h2>
+<h3 id="blocked-on-dante-do-not-invent">Blocked on Dante (do not invent)</h3>
+<ol>
+<li>~~Treasury <code>feeRecipient</code> 0x~~ — <strong>DONE</strong> (<code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code>; Dante-confirmed). Hardened multisig upgrade still optional.</li>
+<li>Naming spends — <strong>DROPPED for now</strong>; stay on Vercel URL (<code>lockwork-dun.vercel.app</code>). Do not push domain buys.</li>
+<li>Ask numbers for pitch deck Slide 9</li>
+<li>Vertical GMV targets to replace illustrative unit-econ assumptions</li>
+<li>Counsel pass on custody + hire/seat language before external fundraise use</li>
+<li>Seat billing live (#4); custodial un-simulate; filmed lock→release smoke; turn off <code>demo_reset</code></li>
+</ol>
+<h3 id="artifact-ownership">Artifact ownership</h3>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This white paper body</td>
+<td>Make Money</td>
+<td><strong>Draft landed 2026-10-01</strong></td>
+</tr>
+<tr>
+<td>Pitch deck outline</td>
+<td>Make Money</td>
+<td><strong>Draft landed</strong> — <code>PITCH_DECK.md</code></td>
+</tr>
+<tr>
+<td>On-chain / fee chapter</td>
+<td>Crypto Bro</td>
+<td><strong>Ready</strong> — folded §7</td>
+</tr>
+<tr>
+<td>Unit-econ / nested-fee exhibit</td>
+<td>Genius</td>
+<td><strong>Ready</strong> — folded §10</td>
+</tr>
+<tr>
+<td>Smoke evidence pack</td>
+<td>Grok Bot</td>
+<td>Placeholders §11 — run when asked</td>
+</tr>
+<tr>
+<td>Framework spine</td>
+<td>Make Money</td>
+<td><code>ECONOMIC_FRAMEWORK.md</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="related-internal-specs">Related internal specs</h3>
+<p><code>PRODUCT_BRIEF.md</code> · <code>MONEY_MODEL.md</code> · <code>PAYOUT_HYBRID.md</code> · <code>OPEN_DECISIONS.md</code> · <code>REFUND_POLICY.md</code> · <code>ONCHAIN_ESCROW_ADAPTER.md</code> · <code>SOCIAL_CREDIT.md</code> · <code>REPUTATION.md</code> · <code>NAMING_GTM.md</code> · <code>APPROVAL_BACKLOG.md</code></p>
+<hr />
+<p><em>End of draft body. Updated 2026-10-01 evening ET for live Sepolia escrow + treasury. No contract deploys, no domain buys, no invented tx receipts from this workstream.</em></p>
+<hr>
+<h2 id="on-chain-chapter">Appendix A — On-chain escrow &amp; fee architecture</h2>
+<h1 id="lockwork-on-chain-escrow-fee-architecture">Lockwork On-Chain Escrow &amp; Fee Architecture</h1>
+<p><em>White-paper chapter · Crypto Bro · Audience: investors and serious partners · Grounded to live product state as of 2026-10-01 evening ET</em></p>
+<p><strong>Product:</strong> Lockwork (live: <a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a> · feed: <a href="https://lockwork-dun.vercel.app/feed">/feed</a> · deploy helper: <a href="https://lockwork-dun.vercel.app/deploy.html">/deploy.html</a>)<br />
+<strong>Brand line:</strong> Lock the payout. Ship the work. Hire the winner.<br />
+<strong>Status:</strong> Base Sepolia escrow <strong>LIVE</strong>; Dante treasury <strong>LIVE</strong> as <code>feeRecipient</code>; custodial still simulated.</p>
+<hr />
+<h2 id="1-thesis">1. Thesis</h2>
+<p>Lockwork sells <strong>certainty of payout that converts into a hire</strong> — not billable hours, not reverse auctions, and not unpaid speculative contests. The employer locks a sealed purse before competition is serious; workers compete by shipping the artifact (the bid <em>is</em> the work); exactly one winner is paid and joins that employer’s company. Hybrid escrow — custodial ledger plus Base USDC — makes the purse enforceable across fiat-friendly and crypto-native participants without turning the product into either a traditional money-transmitter desk or a prize-only contest site.</p>
+<hr />
+<h2 id="2-why-hybrid-beats-pure-tradfi-escrow-and-pure-contest-sites">2. Why hybrid beats pure TradFi escrow and pure contest sites</h2>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Failure mode for this job</th>
+<th>Lockwork response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Classic contest sites</td>
+<td>Unpaid labor; prize optional or opaque; no hire</td>
+<td>Money locked before submissions matter; one paid winner becomes a seat-bearing hire</td>
+</tr>
+<tr>
+<td>Pure TradFi escrow / marketplace hold</td>
+<td>Workers must trust platform custody alone; crypto-native capital sits outside the loop</td>
+<td>Same state machine on a custodial rail <em>and</em> an on-chain rail; employer chooses rail at fund time</td>
+</tr>
+<tr>
+<td>Pure on-chain contest</td>
+<td>Wallet friction for every employer; weak fiat path; employment/seat economics ignored</td>
+<td>Custodial-sim first for product completeness; on-chain as first-class second path; seats ($79) convert contest CAC into ARR</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Shared product contract (both rails):</strong> funds move only through <code>lock</code> → competition → <code>release</code> (one winner) or <code>refund</code> (employer). Workers never call escrow. Platform fee is identical on both rails: <strong>250 bps only on outward release to a winner</strong>. Nested company trees may carve capital internally at <strong>0 bps</strong>; fee fires again only when that capital later leaves the tree to a winner payee.</p>
+<p>Hybrid is therefore not a branding choice. It is the minimum architecture that (a) proves the purse before work, (b) serves both settlement cultures, and (c) keeps fee incidence auditable under one rule set.</p>
+<hr />
+<h2 id="3-rail-mechanics-lock-compete-release-refund">3. Rail mechanics: lock → compete → release / refund</h2>
+<h3 id="shared-escrow-states">Shared escrow states</h3>
+<pre><code>draft → funded → in_review → paid
+                ↘ expired_refunded
+                ↘ cancelled_refunded
+                ↘ disputed (v2 — not in alpha)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>draft</code></td>
+<td>Job written; no capital locked</td>
+</tr>
+<tr>
+<td><code>funded</code></td>
+<td>Full payout locked; submissions open until deadline</td>
+</tr>
+<tr>
+<td><code>in_review</code></td>
+<td>Deadline or early close; demos read-only; contract/ledger still holds funds</td>
+</tr>
+<tr>
+<td><code>paid</code></td>
+<td>Exactly one winner; funds released</td>
+</tr>
+<tr>
+<td><code>expired_refunded</code> / <code>cancelled_refunded</code></td>
+<td>Full return to employer; <strong>0</strong> platform fee</td>
+</tr>
+<tr>
+<td><code>disputed</code></td>
+<td>Deferred to v2</td>
+</tr>
+</tbody>
+</table>
+<p>Both rails implement the same <code>EscrowAdapter</code> surface: <code>lock</code>, <code>release</code>, <code>refund</code>, <code>status</code>. Job records carry <code>rail</code>, <code>escrow_ref</code>, <code>amount</code>, <code>currency</code>, and <code>state</code>. Rail is chosen at fund time; there is no mid-job bridge between custodial and on-chain in v1.</p>
+<h3 id="who-may-call-what">Who may call what</h3>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Actor</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lock</code></td>
+<td><strong>Employer</strong></td>
+<td>Custodial: card/bank/balance hold. On-chain: wallet Connect → Approve USDC → Lock</td>
+</tr>
+<tr>
+<td><code>release</code></td>
+<td><strong>System and/or employer</strong> after exactly one winner is selected</td>
+<td>Push payout; workers have no <code>claim()</code> in v1</td>
+</tr>
+<tr>
+<td><code>refund</code></td>
+<td><strong>System</strong> on expiry; <strong>employer</strong> on allowed cancel</td>
+<td>Never a worker</td>
+</tr>
+<tr>
+<td>Workers / lead bots</td>
+<td>—</td>
+<td>No fund moves in v1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="preferred-on-chain-path-design-target">Preferred on-chain path (design target)</h3>
+<ul>
+<li><strong>Chain:</strong> Base L2 (mainnet chain id <code>8453</code>; test: Base Sepolia <code>84532</code>)</li>
+<li><strong>Asset:</strong> Native USDC (6 decimals); integer fee math only</li>
+<li><strong>UI:</strong> Vercel-hosted Lockwork OS; wallet Connect → Approve → Lock on fund</li>
+<li><strong>Contract:</strong> <code>LockworkEscrow.sol</code> — <strong>LIVE on Base Sepolia</strong> at <code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> (<a href="https://sepolia.basescan.org/address/0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722">Basescan</a>)</li>
+<li><strong>Events (minimum):</strong> <code>Locked</code>, <code>Released</code>, <code>Refunded</code></li>
+<li><strong>Auth:</strong> employer for own escrow and/or platform relayer after the product state machine authorizes; release/refund use checks-effects-interactions + nonReentrant patterns</li>
+</ul>
+<p><strong>Live <code>/api/config</code> (2026-10-01 evening ET):</strong> <code>chain.enabled: true</code> · escrow <code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> · <code>fee_recipient</code> <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> · <code>feeBps</code> 250 · Base Sepolia · on-chain <code>simulated: false</code> · <strong>custodial still <code>simulated: true</code></strong> · <code>demo_reset</code> may still be true. Sepolia USDC candidate <code>0x036CbD53842c5426634e7929541eC2318f3dCF7e</code>. This is <strong>live testnet settlement</strong>, not Base mainnet.</p>
+<hr />
+<h2 id="4-fee-incidence-250-bps-d1-leaf-outward">4. Fee incidence (250 bps, D1 leaf-outward)</h2>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Platform fee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lock (any rail)</td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>Internal <code>parent_carveout</code></td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>Expansion lock (new capital into a child)</td>
+<td><strong>0</strong> at lock; fee when that capital later releases outward</td>
+</tr>
+<tr>
+<td>Outward <code>release</code> to a winner</td>
+<td><strong>250 bps</strong> (2.5%)</td>
+</tr>
+<tr>
+<td>Refund (<code>expired_refunded</code> / <code>cancelled_refunded</code>)</td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>Sponsor placement (when financing attaches)</td>
+<td><strong>500 bps</strong> of contribution (separate line)</td>
+</tr>
+</tbody>
+</table>
+<p>Integer math (USDC 6-dec):</p>
+<pre><code>fee_amount = amount * 250 / 10000   // floor
+winner_net = amount - fee_amount
+</code></pre>
+<h3 id="numeric-example-flat-job">Numeric example (flat job)</h3>
+<p>Employer locks <strong>4,000 USDC</strong>. One winner is selected.</p>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Locked</td>
+<td>4,000.000000 USDC</td>
+</tr>
+<tr>
+<td>Platform fee (250 bps)</td>
+<td>100.000000 USDC → <code>feeRecipient</code></td>
+</tr>
+<tr>
+<td>Winner net</td>
+<td>3,900.000000 USDC</td>
+</tr>
+</tbody>
+</table>
+<h3 id="nested-example-d1-no-double-tax-on-idle-capital">Nested example (D1 — no double tax on idle capital)</h3>
+<p>Root locks <strong>$10,000</strong>. Carve-outs: <strong>$4,000</strong> and <strong>$3,000</strong> to children (<strong>0</strong> fee on the transfers). One leaf ($4,000) pays a winner → platform fee <strong>$100</strong>; winner net <strong>$3,900</strong>. If both leaves later pay winners under D1, fee = ($4k + $3k) × 2.5% = <strong>$175</strong>. Residual root capital fees only if/when paid outward to a root-level winner. Max nesting depth in v1: <strong>3</strong>.</p>
+<p>On-chain v1 escrows are <strong>flat</strong> job deposits; nested carve-outs remain custodial/ledger until a later policy consciously moves trees on-chain. Fee <em>incidence</em> still follows D1 on every rail so employers are never taxed for splitting budget inside the company tree.</p>
+<p><strong>Related income stack (not on-chain skim):</strong> company seats <strong>$79</strong>/mo after hire (billing rolls up to the company); optional sponsor placement at <strong>500 bps</strong>; custodial float is internal-only and never promised or shown on public surfaces.</p>
+<p><strong><code>feeRecipient</code> — LIVE:</strong> Dante treasury <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> (confirmed by Dante in 1:1 with Crypto Bro). Policy unchanged: treasury wallet (multisig / hardened custody preferred), <strong>never</strong> the deploy or agent hot wallet. On-chain fee capture is wired on Sepolia; custodial fee path remains simulated.</p>
+<hr />
+<h2 id="5-public-reputation-vs-private-gmv">5. Public reputation vs private GMV</h2>
+<p>Lockwork splits trust surfaces deliberately:</p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Shows</th>
+<th>Does not show</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company OS (<code>/</code>)</td>
+<td>Escrow state, wallet Connect/Approve/Lock, fee copy, nested budgets</td>
+<td>— (money belongs here)</td>
+</tr>
+<tr>
+<td>Public <code>/feed</code> and <code>/u/:handle</code></td>
+<td>Jobs completed, badges, demerits, employment-days style reputation</td>
+<td>Escrow amounts, GMV, fee tallies, purse sizes</td>
+</tr>
+</tbody>
+</table>
+<p>Status compounds matching quality without leaking pricing power or inviting fee gaming. GMV and released volume stay inside the company OS and operator metrics. Public profiles are <strong>ENS-ready later</strong> (<code>*.eth</code> / Base names as identity handles) — identity binding is a roadmap item, not a live claim. Product naming assets (<code>lockwork.eth</code>, <code>lockwork.io</code>, and related) remain <strong>unexecuted</strong>; this chapter does not claim domain ownership.</p>
+<hr />
+<h2 id="6-trust-assumptions-and-risks">6. Trust assumptions and risks</h2>
+<h3 id="assumptions-investors-should-underwrite">Assumptions investors should underwrite</h3>
+<ol>
+<li>Employers will lock real value before treating submissions as serious.</li>
+<li>Exactly-one-winner + hire conversion is the product event (not “best of N prizes”).</li>
+<li>Both rails remain fee-parity under D1 so switching rails does not change the economic contract.</li>
+<li>Workers never control escrow keys or claim paths in v1 — reduces social-engineering surface.</li>
+<li>Public dollar-free reputation is a feature, not a temporary omission.</li>
+</ol>
+<h3 id="material-risks-draft-mitigations">Material risks (draft mitigations)</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation posture</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Custodial rail ≈ money transmission / employment-adjacent regulation</strong></td>
+<td>Prefer on-chain for early crypto ICP; keep “hire / company seat” wording careful in decks and filings; delay promising float yield</td>
+</tr>
+<tr>
+<td><strong><code>feeRecipient</code> key custody</strong></td>
+<td>Dante treasury multisig (or equivalent); never single hot EOA for mainnet fees; never deploy wallet as recipient</td>
+</tr>
+<tr>
+<td><strong>Spoofed winner oracle</strong></td>
+<td>Winner set only after authenticated product selection; release restricted to system/employer roles</td>
+</tr>
+<tr>
+<td><strong>Wrong chain / wrong USDC</strong></td>
+<td>Hard chain-id checks; verify Circle/BaseScan addresses immediately before any deploy (Sepolia vs Base mainnet differ)</td>
+</tr>
+<tr>
+<td><strong>Wallet UX friction</strong></td>
+<td>Base for low gas; clear Connect → Approve → Lock; optional Permit2 later</td>
+</tr>
+<tr>
+<td><strong>Stuck funds</strong></td>
+<td>Explicit refund paths; pause/rescue/upgrade policy only with Dante-approved admin design</td>
+</tr>
+<tr>
+<td><strong>Testnet → mainnet gap</strong></td>
+<td>Sepolia escrow live; filmed lock→release smoke + custodial un-simulate still required before Base mainnet</td>
+</tr>
+<tr>
+<td><strong>Naming / trademark</strong></td>
+<td>Buy order frozen until Dante executes; registration ≠ mark clearance</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-roadmap-gates-cash-relevant-order">7. Roadmap gates (cash-relevant order)</h2>
+<p>Suggested execution order aligns with the approval backlog cash order <strong>1 → 2 → 4 → 14 → 9/10</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Treasury address</strong></td>
+<td><strong>DONE</strong> — <code>feeRecipient</code> = Dante treasury <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code></td>
+</tr>
+<tr>
+<td><strong>2. Sepolia</strong></td>
+<td><strong>DONE (deploy)</strong> — escrow <code>0xa24D…C722</code> live; lock→release smoke receipt <strong>not yet filmed</strong></td>
+</tr>
+<tr>
+<td><strong>3. Base mainnet</strong></td>
+<td>Re-verify native USDC; audit/review gate; production bytecode; relayer gas policy documented</td>
+</tr>
+<tr>
+<td><strong>4. Un-simulate / seats</strong></td>
+<td>On-chain un-simulated; <strong>custodial still simulated</strong>; seat billing ($79) still open (#4); turn off <code>demo_reset</code></td>
+</tr>
+<tr>
+<td><strong>Docs / GTM</strong></td>
+<td>Pitch deck + this white-paper family with live Sepolia facts</td>
+</tr>
+</tbody>
+</table>
+<p>Shipping order for adapters remains: shared state machine → <strong>custodial-sim</strong> (already first; full contest UI) → custodial-live → <strong>on-chain</strong> as second path without rewriting jobs.</p>
+<hr />
+<h2 id="8-open-items-still-needing-dante">8. Open items still needing Dante</h2>
+<p>Agents and partners must <strong>not</strong> invent tx receipts, buy domains, deploy contracts, or flip production env vars. Remaining open items:</p>
+<ol>
+<li>~~Treasury <code>feeRecipient</code> 0x~~ — <strong>LIVE</strong> <code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> (Dante-confirmed). Optional: harden to multisig.  </li>
+<li><strong>Naming spends</strong> — <strong>DROPPED</strong>; stay on Vercel URL. Do not purchase domains.  </li>
+<li>Confirm Base-only + USDC-only v1 scope and re-verify USDC addresses at mainnet deploy time  </li>
+<li>Relayer model for release/refund gas; pause / rescue / upgrade (immutable vs proxy)  </li>
+<li>Whether nested carve-outs ever move on-chain (v1 default: no)  </li>
+<li>Regulatory copy pass for custody and hire/seat language before external fundraising use of this chapter  </li>
+<li>Filmed lock→release smoke on Sepolia; custodial un-simulate; seat billing live (#4); <code>demo_reset</code> off on prod  </li>
+</ol>
+<p><strong>Live product:</strong> <a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a> — contest OS loop shipped; <strong>Base Sepolia escrow + Dante treasury LIVE</strong>; custodial still simulated; seat billing not yet charged. Live testnet settlement of the sealed-purse thesis — not Base mainnet, not a fully live custodial clearinghouse.</p>
+<hr />
+<p><em>Related internal specs (folded, not restated wholesale): <code>ONCHAIN_ESCROW_ADAPTER.md</code>, <code>PAYOUT_HYBRID.md</code>, <code>ECONOMIC_FRAMEWORK.md</code>, <code>MONEY_MODEL.md</code>, <code>NAMING_BUY_ORDER.md</code>.</em></p>
+<hr>
+<h2 id="unit-econ-exhibit">Appendix B — Unit economics &amp; nested fee exhibit</h2>
+<h1 id="lockwork-unit-economics-nested-fee-exhibit">Lockwork Unit Economics &amp; Nested Fee Exhibit</h1>
+<p><em>White-paper exhibit · Genius draft for Make Money fold into WHITEPAPER.md · Audience: investors and serious partners · Companion to Crypto Bro’s on-chain/fee chapter · Grounded 2026-10-01</em></p>
+<p><strong>Product:</strong> Lockwork (<a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a>)<br />
+<strong>Brand line:</strong> Lock the payout. Ship the work. Hire the winner.<br />
+<strong>Assumptions:</strong> illustrative until Dante sets vertical GMV targets — do not present as audited actuals.</p>
+<hr />
+<h2 id="1-thesis-money-seat">1. Thesis (money seat)</h2>
+<p>Lockwork’s edge is not a higher take-rate. It is <strong>one fee rule that survives nesting</strong>, plus a <strong>hire that converts contest CAC into company seats</strong>. Fee prints cash on success; seats print multiple; sponsors and float are optional layers. Raising the fee to “fix” thin volume destroys density — ship seat billing first.</p>
+<hr />
+<h2 id="2-income-stack-locked-knobs">2. Income stack (locked knobs)</h2>
+<table>
+<thead>
+<tr>
+<th>Stream</th>
+<th>Rule</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release fee</td>
+<td><strong>250 bps</strong> on <strong>outward</strong> release to a winner only</td>
+<td>Core cash</td>
+</tr>
+<tr>
+<td>Carve-outs / internal moves</td>
+<td><strong>0 bps</strong></td>
+<td>Nesting must feel free</td>
+</tr>
+<tr>
+<td>Refunds (<code>expired</code> / <code>cancelled</code>)</td>
+<td><strong>0 bps</strong></td>
+<td>No tax on failed matches</td>
+</tr>
+<tr>
+<td>Company seats</td>
+<td><strong>$79/mo</strong> default (<code>workspace_member</code> stub)</td>
+<td>LTV / retention</td>
+</tr>
+<tr>
+<td>Sponsor placement</td>
+<td><strong>500 bps</strong> of contribution when financing attaches</td>
+<td>Secondary</td>
+</tr>
+<tr>
+<td>Custodial float</td>
+<td>Internal only; never pitched</td>
+<td>Silent margin</td>
+</tr>
+<tr>
+<td>Plugin / bot tolls</td>
+<td>Later income layer</td>
+<td>Not v1</td>
+</tr>
+</tbody>
+</table>
+<p>Winner net: <code>amount − fee_amount</code>. Billing and seats roll up to <strong>the company</strong> (root unit), not a free-floating “team.”</p>
+<hr />
+<h2 id="3-unit-economics-scenario-table-monthly">3. Unit economics — scenario table (monthly)</h2>
+<p><em>Inputs (swappable):</em> refund/no-winner <strong>15%</strong> of funded jobs; avg lock <strong>14</strong> days; float APR <strong>4%</strong> (custodial internal); seat keep <strong>40%</strong> of wins; financing on <strong>20%</strong> of jobs; sponsor share <strong>30%</strong> of escrow when attached.</p>
+<h3 id="a-release-fee-float">A — Release fee + float</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Jobs/mo</th>
+<th>Avg escrow</th>
+<th>Funded GMV</th>
+<th>Released GMV</th>
+<th>Fee @ 250 bps</th>
+<th>Float ~/mo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed</td>
+<td>50</td>
+<td>$500</td>
+<td>$25k</td>
+<td>$21.3k</td>
+<td><strong>$531</strong></td>
+<td>~$39</td>
+</tr>
+<tr>
+<td>Early</td>
+<td>200</td>
+<td>$2,000</td>
+<td>$400k</td>
+<td>$340k</td>
+<td><strong>$8,500</strong></td>
+<td>~$622</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>1,000</td>
+<td>$5,000</td>
+<td>$5.0M</td>
+<td>$4.25M</td>
+<td><strong>$106k</strong></td>
+<td>~$7.8k</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>5,000</td>
+<td>$8,000</td>
+<td>$40M</td>
+<td>$34M</td>
+<td><strong>$850k</strong></td>
+<td>~$62k</td>
+</tr>
+</tbody>
+</table>
+<p>Float ≈ (funded × 14/30) × (4%/12). Fee is the print; float is silent.</p>
+<h3 id="b-employment-seats-mrr">B — Employment seats (MRR)</h3>
+<p>Wins/mo ≈ jobs × 85%. Active seats ≈ wins × 40%.</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Wins</th>
+<th>Seats</th>
+<th>@$29</th>
+<th><strong>@$79</strong></th>
+<th>@$149</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed</td>
+<td>42</td>
+<td>17</td>
+<td>$493</td>
+<td><strong>$1,343</strong></td>
+<td>$2,533</td>
+</tr>
+<tr>
+<td>Early</td>
+<td>170</td>
+<td>68</td>
+<td>$1,972</td>
+<td><strong>$5,372</strong></td>
+<td>$10,132</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>850</td>
+<td>340</td>
+<td>$9,860</td>
+<td><strong>$26,860</strong></td>
+<td>$50,660</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>4,250</td>
+<td>1,700</td>
+<td>$49k</td>
+<td><strong>$134k</strong></td>
+<td>$253k</td>
+</tr>
+</tbody>
+</table>
+<p>Early + $79 ≈ <strong>~$64k ARR</strong> from seats alone — compounding vs one-shot contest fees.</p>
+<h3 id="c-sponsor-placement-when-live">C — Sponsor placement (when live)</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Sponsored jobs</th>
+<th>Contrib GMV</th>
+<th>Placement @ 5%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed</td>
+<td>10</td>
+<td>$1.5k</td>
+<td>$75</td>
+</tr>
+<tr>
+<td>Early</td>
+<td>40</td>
+<td>$24k</td>
+<td>$1,200</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>200</td>
+<td>$300k</td>
+<td>$15k</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>1,000</td>
+<td>$2.4M</td>
+<td>$120k</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stack-snapshot-early-200-2k">Stack snapshot — Early (200 × $2k)</h3>
+<table>
+<thead>
+<tr>
+<th>Stream</th>
+<th>$/mo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release fee</td>
+<td>8,500</td>
+</tr>
+<tr>
+<td>Float (internal)</td>
+<td>~622</td>
+</tr>
+<tr>
+<td>Seats @ $79</td>
+<td>5,372</td>
+</tr>
+<tr>
+<td>Sponsor placement</td>
+<td>1,200</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~$15.7k</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Fee still leads cash at Early; seats build valuation multiple. Prefer shipping seat billing over +50 bps fee.</p>
+<hr />
+<h2 id="4-nested-fee-math-d1-leaf-outward-only">4. Nested fee math (D1 — leaf-outward only)</h2>
+<p><strong>Rule:</strong> Fee fires only when capital <strong>leaves the company tree to a winner</strong>. Internal <code>parent_carveout</code> = <strong>$0</strong> fee. Expansion capital increases fee base only when that capital later pays a winner. Depth ≤ <strong>3</strong>, no cycles (v1) — walks stay auditable.</p>
+<h3 id="exhibit-10k-root-tree">Exhibit — $10k root tree</h3>
+<p>Root locks <strong>$10,000</strong>. Carve-out children <strong>$4,000</strong> + <strong>$3,000</strong>. One leaf ($4k) pays a winner. Fee = 250 bps.</p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Platform fee</th>
+<th>Why it fails or wins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D1 leaf-outward (locked)</strong></td>
+<td><strong>$100</strong></td>
+<td>Only $4k × 2.5%; carve-outs $0; winner net $3,900</td>
+</tr>
+<tr>
+<td>Fee on every carve-out + leaf</td>
+<td><strong>$275</strong></td>
+<td>Employers feel split as a charge → nesting dies</td>
+</tr>
+<tr>
+<td>Double-dip root + leaf</td>
+<td><strong>$350</strong></td>
+<td>Same capital taxed twice → churn</td>
+</tr>
+</tbody>
+</table>
+<p>If both leaves later pay under D1: fee = ($4k+$3k)×2.5% = <strong>$175</strong>. Residual $3k on root fees only if/when paid outward to a root-level winner. Multiple leaf wins → multiple <strong>company</strong> seats possible; fee still once per outward payout, never per carve-out.</p>
+<p><strong>Product HUD implication (#18):</strong> OS-only nested budget must show parent remaining and “carve-out = $0 fee” so employers do not fear double-dip.</p>
+<hr />
+<h2 id="5-stress-findings-decision-rules">5. Stress findings (decision rules)</h2>
+<ol>
+<li><strong>250 bps is fine for v1</strong> vs marketplace take-rates <strong>if</strong> seats convert. Do not hike fee to fix Seed volume.</li>
+<li><strong>Seat price &gt; fee bps</strong> past Early — default <strong>$79</strong> until vertical WTP is measured.</li>
+<li><strong>Float is not a pitch</strong> — keep internal; hundreds/mo at Early, not a story.</li>
+<li><strong>Refund rate is the silent killer</strong> — every +5 pp refund ≈ −5% fee revenue. Product: push pick-a-winner before expiry.</li>
+<li><strong>Sponsor placement is optional upside</strong> until financing UX ships; don’t block the core loop.</li>
+<li>High-ticket / low-volume verticals (avg escrow ≥ $10k): fee alone can fund ops; seats still win long-term.</li>
+</ol>
+<hr />
+<h2 id="6-instruments-that-decide-the-next-fee-move-19">6. Instruments that decide the next fee move (#19)</h2>
+<p>Track before changing bps or seat price:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Released GMV</td>
+<td>True fee base (not funded, not carved)</td>
+</tr>
+<tr>
+<td>Refund / no-winner %</td>
+<td>Silent fee destroyer</td>
+</tr>
+<tr>
+<td>Seat keep 30 / 60 / 90</td>
+<td>Whether contest CAC becomes ARR</td>
+</tr>
+</tbody>
+</table>
+<p>Replace-me inputs when Dante sets them: vertical, target jobs/mo, avg escrow, real refund %, seat WTP. Re-run tables; do not invent actuals.</p>
+<hr />
+<h2 id="7-copy-constraint-20">7. Copy constraint (#20)</h2>
+<p>Public and WP/deck language: <strong>hired role / company seat</strong> — avoid EoR-looking “employee” framing until counsel clears it. Fee copy stays escrow-primary (lock → release), never clockwork metaphors for money.</p>
+<hr />
+<h2 id="8-hand-off">8. Hand-off</h2>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This unit-econ + nested-fee chapter</td>
+<td>Genius</td>
+<td><strong>Drafted 2026-10-01</strong></td>
+</tr>
+<tr>
+<td>On-chain / fee architecture chapter</td>
+<td>Crypto Bro</td>
+<td>See <code>WHITEOBYPER_ONCHAIN_CHAPTER.md</code></td>
+</tr>
+<tr>
+<td>White-paper body edit / pitch deck</td>
+<td>Make Money</td>
+<td>Integrate exhibits</td>
+</tr>
+<tr>
+<td>Live smoke evidence pack</td>
+<td>Grok Bot</td>
+<td>Folds under WP when asked</td>
+</tr>
+</tbody>
+</table>
+<p><em>Source tables: <code>MONEY_MODEL.md</code>. Framework spine: <code>ECONOMIC_FRAMEWORK.md</code>. Decisions: <code>OPEN_DECISIONS.md</code> (D1).</em></p>
+<hr />
+<h2 id="live-status-footnote-2026-10-01-evening-et">Live status footnote (2026-10-01 evening ET)</h2>
+<table>
+<thead>
+<tr>
+<th>Knob</th>
+<th>Live</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fee / placement / seat / depth</td>
+<td>250 bps / 500 bps / <strong>$79</strong> / ≤3</td>
+</tr>
+<tr>
+<td>Treasury <code>fee_recipient</code></td>
+<td><code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> (Dante-confirmed)</td>
+</tr>
+<tr>
+<td>Escrow (Base Sepolia)</td>
+<td><code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> · on-chain un-simulated</td>
+</tr>
+<tr>
+<td>Custodial rail</td>
+<td>Still simulated</td>
+</tr>
+<tr>
+<td>Seat billing charge</td>
+<td><strong>Not live yet</strong> (#4) — tables above remain model assumptions until keep 30/60/90 is measured</td>
+</tr>
+</tbody>
+</table>
+<p><em>Product:</em> <a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a> · <em>Config:</em> <a href="https://lockwork-dun.vercel.app/api/config">/api/config</a></p>
+<hr>
+<h2 id="unit-econ-chapter">Appendix C — Unit economics chapter (companion)</h2>
+<h1 id="lockwork-unit-economics-nested-fee-exhibit">Lockwork Unit Economics &amp; Nested Fee Exhibit</h1>
+<p><em>White-paper exhibit · Genius draft for Make Money fold into WHITEPAPER.md · Audience: investors and serious partners · Companion to Crypto Bro’s on-chain/fee chapter · Grounded 2026-10-01</em></p>
+<p><strong>Product:</strong> Lockwork (<a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a>)<br />
+<strong>Brand line:</strong> Lock the payout. Ship the work. Hire the winner.<br />
+<strong>Assumptions:</strong> illustrative until Dante sets vertical GMV targets — do not present as audited actuals.</p>
+<hr />
+<h2 id="1-thesis-money-seat">1. Thesis (money seat)</h2>
+<p>Lockwork’s edge is not a higher take-rate. It is <strong>one fee rule that survives nesting</strong>, plus a <strong>hire that converts contest CAC into company seats</strong>. Fee prints cash on success; seats print multiple; sponsors and float are optional layers. Raising the fee to “fix” thin volume destroys density — ship seat billing first.</p>
+<hr />
+<h2 id="2-income-stack-locked-knobs">2. Income stack (locked knobs)</h2>
+<table>
+<thead>
+<tr>
+<th>Stream</th>
+<th>Rule</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release fee</td>
+<td><strong>250 bps</strong> on <strong>outward</strong> release to a winner only</td>
+<td>Core cash</td>
+</tr>
+<tr>
+<td>Carve-outs / internal moves</td>
+<td><strong>0 bps</strong></td>
+<td>Nesting must feel free</td>
+</tr>
+<tr>
+<td>Refunds (<code>expired</code> / <code>cancelled</code>)</td>
+<td><strong>0 bps</strong></td>
+<td>No tax on failed matches</td>
+</tr>
+<tr>
+<td>Company seats</td>
+<td><strong>$79/mo</strong> default (<code>workspace_member</code> stub)</td>
+<td>LTV / retention</td>
+</tr>
+<tr>
+<td>Sponsor placement</td>
+<td><strong>500 bps</strong> of contribution when financing attaches</td>
+<td>Secondary</td>
+</tr>
+<tr>
+<td>Custodial float</td>
+<td>Internal only; never pitched</td>
+<td>Silent margin</td>
+</tr>
+<tr>
+<td>Plugin / bot tolls</td>
+<td>Later income layer</td>
+<td>Not v1</td>
+</tr>
+</tbody>
+</table>
+<p>Winner net: <code>amount − fee_amount</code>. Billing and seats roll up to <strong>the company</strong> (root unit), not a free-floating “team.”</p>
+<hr />
+<h2 id="3-unit-economics-scenario-table-monthly">3. Unit economics — scenario table (monthly)</h2>
+<p><em>Inputs (swappable):</em> refund/no-winner <strong>15%</strong> of funded jobs; avg lock <strong>14</strong> days; float APR <strong>4%</strong> (custodial internal); seat keep <strong>40%</strong> of wins; financing on <strong>20%</strong> of jobs; sponsor share <strong>30%</strong> of escrow when attached.</p>
+<h3 id="a-release-fee-float">A — Release fee + float</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Jobs/mo</th>
+<th>Avg escrow</th>
+<th>Funded GMV</th>
+<th>Released GMV</th>
+<th>Fee @ 250 bps</th>
+<th>Float ~/mo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed</td>
+<td>50</td>
+<td>$500</td>
+<td>$25k</td>
+<td>$21.3k</td>
+<td><strong>$531</strong></td>
+<td>~$39</td>
+</tr>
+<tr>
+<td>Early</td>
+<td>200</td>
+<td>$2,000</td>
+<td>$400k</td>
+<td>$340k</td>
+<td><strong>$8,500</strong></td>
+<td>~$622</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>1,000</td>
+<td>$5,000</td>
+<td>$5.0M</td>
+<td>$4.25M</td>
+<td><strong>$106k</strong></td>
+<td>~$7.8k</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>5,000</td>
+<td>$8,000</td>
+<td>$40M</td>
+<td>$34M</td>
+<td><strong>$850k</strong></td>
+<td>~$62k</td>
+</tr>
+</tbody>
+</table>
+<p>Float ≈ (funded × 14/30) × (4%/12). Fee is the print; float is silent.</p>
+<h3 id="b-employment-seats-mrr">B — Employment seats (MRR)</h3>
+<p>Wins/mo ≈ jobs × 85%. Active seats ≈ wins × 40%.</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Wins</th>
+<th>Seats</th>
+<th>@$29</th>
+<th><strong>@$79</strong></th>
+<th>@$149</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed</td>
+<td>42</td>
+<td>17</td>
+<td>$493</td>
+<td><strong>$1,343</strong></td>
+<td>$2,533</td>
+</tr>
+<tr>
+<td>Early</td>
+<td>170</td>
+<td>68</td>
+<td>$1,972</td>
+<td><strong>$5,372</strong></td>
+<td>$10,132</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>850</td>
+<td>340</td>
+<td>$9,860</td>
+<td><strong>$26,860</strong></td>
+<td>$50,660</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>4,250</td>
+<td>1,700</td>
+<td>$49k</td>
+<td><strong>$134k</strong></td>
+<td>$253k</td>
+</tr>
+</tbody>
+</table>
+<p>Early + $79 ≈ <strong>~$64k ARR</strong> from seats alone — compounding vs one-shot contest fees.</p>
+<h3 id="c-sponsor-placement-when-live">C — Sponsor placement (when live)</h3>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Sponsored jobs</th>
+<th>Contrib GMV</th>
+<th>Placement @ 5%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed</td>
+<td>10</td>
+<td>$1.5k</td>
+<td>$75</td>
+</tr>
+<tr>
+<td>Early</td>
+<td>40</td>
+<td>$24k</td>
+<td>$1,200</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>200</td>
+<td>$300k</td>
+<td>$15k</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>1,000</td>
+<td>$2.4M</td>
+<td>$120k</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stack-snapshot-early-200-2k">Stack snapshot — Early (200 × $2k)</h3>
+<table>
+<thead>
+<tr>
+<th>Stream</th>
+<th>$/mo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release fee</td>
+<td>8,500</td>
+</tr>
+<tr>
+<td>Float (internal)</td>
+<td>~622</td>
+</tr>
+<tr>
+<td>Seats @ $79</td>
+<td>5,372</td>
+</tr>
+<tr>
+<td>Sponsor placement</td>
+<td>1,200</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~$15.7k</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Fee still leads cash at Early; seats build valuation multiple. Prefer shipping seat billing over +50 bps fee.</p>
+<hr />
+<h2 id="4-nested-fee-math-d1-leaf-outward-only">4. Nested fee math (D1 — leaf-outward only)</h2>
+<p><strong>Rule:</strong> Fee fires only when capital <strong>leaves the company tree to a winner</strong>. Internal <code>parent_carveout</code> = <strong>$0</strong> fee. Expansion capital increases fee base only when that capital later pays a winner. Depth ≤ <strong>3</strong>, no cycles (v1) — walks stay auditable.</p>
+<h3 id="exhibit-10k-root-tree">Exhibit — $10k root tree</h3>
+<p>Root locks <strong>$10,000</strong>. Carve-out children <strong>$4,000</strong> + <strong>$3,000</strong>. One leaf ($4k) pays a winner. Fee = 250 bps.</p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Platform fee</th>
+<th>Why it fails or wins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D1 leaf-outward (locked)</strong></td>
+<td><strong>$100</strong></td>
+<td>Only $4k × 2.5%; carve-outs $0; winner net $3,900</td>
+</tr>
+<tr>
+<td>Fee on every carve-out + leaf</td>
+<td><strong>$275</strong></td>
+<td>Employers feel split as a charge → nesting dies</td>
+</tr>
+<tr>
+<td>Double-dip root + leaf</td>
+<td><strong>$350</strong></td>
+<td>Same capital taxed twice → churn</td>
+</tr>
+</tbody>
+</table>
+<p>If both leaves later pay under D1: fee = ($4k+$3k)×2.5% = <strong>$175</strong>. Residual $3k on root fees only if/when paid outward to a root-level winner. Multiple leaf wins → multiple <strong>company</strong> seats possible; fee still once per outward payout, never per carve-out.</p>
+<p><strong>Product HUD implication (#18):</strong> OS-only nested budget must show parent remaining and “carve-out = $0 fee” so employers do not fear double-dip.</p>
+<hr />
+<h2 id="5-stress-findings-decision-rules">5. Stress findings (decision rules)</h2>
+<ol>
+<li><strong>250 bps is fine for v1</strong> vs marketplace take-rates <strong>if</strong> seats convert. Do not hike fee to fix Seed volume.</li>
+<li><strong>Seat price &gt; fee bps</strong> past Early — default <strong>$79</strong> until vertical WTP is measured.</li>
+<li><strong>Float is not a pitch</strong> — keep internal; hundreds/mo at Early, not a story.</li>
+<li><strong>Refund rate is the silent killer</strong> — every +5 pp refund ≈ −5% fee revenue. Product: push pick-a-winner before expiry.</li>
+<li><strong>Sponsor placement is optional upside</strong> until financing UX ships; don’t block the core loop.</li>
+<li>High-ticket / low-volume verticals (avg escrow ≥ $10k): fee alone can fund ops; seats still win long-term.</li>
+</ol>
+<hr />
+<h2 id="6-instruments-that-decide-the-next-fee-move-19">6. Instruments that decide the next fee move (#19)</h2>
+<p>Track before changing bps or seat price:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Released GMV</td>
+<td>True fee base (not funded, not carved)</td>
+</tr>
+<tr>
+<td>Refund / no-winner %</td>
+<td>Silent fee destroyer</td>
+</tr>
+<tr>
+<td>Seat keep 30 / 60 / 90</td>
+<td>Whether contest CAC becomes ARR</td>
+</tr>
+</tbody>
+</table>
+<p>Replace-me inputs when Dante sets them: vertical, target jobs/mo, avg escrow, real refund %, seat WTP. Re-run tables; do not invent actuals.</p>
+<hr />
+<h2 id="7-copy-constraint-20">7. Copy constraint (#20)</h2>
+<p>Public and WP/deck language: <strong>hired role / company seat</strong> — avoid EoR-looking “employee” framing until counsel clears it. Fee copy stays escrow-primary (lock → release), never clockwork metaphors for money.</p>
+<hr />
+<h2 id="8-hand-off">8. Hand-off</h2>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>This unit-econ + nested-fee chapter</td>
+<td>Genius</td>
+<td><strong>Drafted 2026-10-01</strong></td>
+</tr>
+<tr>
+<td>On-chain / fee architecture chapter</td>
+<td>Crypto Bro</td>
+<td>See <code>WHITEOBYPER_ONCHAIN_CHAPTER.md</code></td>
+</tr>
+<tr>
+<td>White-paper body edit / pitch deck</td>
+<td>Make Money</td>
+<td>Integrate exhibits</td>
+</tr>
+<tr>
+<td>Live smoke evidence pack</td>
+<td>Grok Bot</td>
+<td>Folds under WP when asked</td>
+</tr>
+</tbody>
+</table>
+<p><em>Source tables: <code>MONEY_MODEL.md</code>. Framework spine: <code>ECONOMIC_FRAMEWORK.md</code>. Decisions: <code>OPEN_DECISIONS.md</code> (D1).</em></p>
+<hr />
+<h2 id="live-status-footnote-2026-10-01-evening-et">Live status footnote (2026-10-01 evening ET)</h2>
+<table>
+<thead>
+<tr>
+<th>Knob</th>
+<th>Live</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fee / placement / seat / depth</td>
+<td>250 bps / 500 bps / <strong>$79</strong> / ≤3</td>
+</tr>
+<tr>
+<td>Treasury <code>fee_recipient</code></td>
+<td><code>0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</code> (Dante-confirmed)</td>
+</tr>
+<tr>
+<td>Escrow (Base Sepolia)</td>
+<td><code>0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</code> · on-chain un-simulated</td>
+</tr>
+<tr>
+<td>Custodial rail</td>
+<td>Still simulated</td>
+</tr>
+<tr>
+<td>Seat billing charge</td>
+<td><strong>Not live yet</strong> (#4) — tables above remain model assumptions until keep 30/60/90 is measured</td>
+</tr>
+</tbody>
+</table>
+<p><em>Product:</em> <a href="https://lockwork-dun.vercel.app/">https://lockwork-dun.vercel.app/</a> · <em>Config:</em> <a href="https://lockwork-dun.vercel.app/api/config">/api/config</a></p>
+</article>
+<footer class="foot">
+  <span>Lockwork · Lock the payout. Ship the work. Hire the winner.</span>
+  <span><a href="/package">Package index</a> · <a href="/">App</a></span>
+</footer>
+</main>
+</body>
+</html>

@@ -24,6 +24,9 @@ export default async function landing() {
       <a href="#rails" data-scroll>Rails</a>
       <a href="#roadmap" data-scroll>Roadmap</a>
       <a href="/feed">Feed</a>
+      <a href="/pitch">Pitch</a>
+      <a href="/whitepaper">White paper</a>
+      <a href="/package">Package</a>
       ${closedAlpha ? html`<span class="pill funded nodot">Closed alpha</span>` : ''}
       <a class="btn primary" href="#/app">Open the live demo ${ic('arrow')}</a>
     </div>
@@ -190,7 +193,12 @@ export default async function landing() {
   <footer class="lp-foot">
     <div class="lp-wrap row between">
       <span class="row" style="gap:8px">${logo(18)} Lockwork · built by Dante Final</span>
-      <span>${live ? 'Demo build: USDC runs on Base Sepolia with test funds; card payments are simulated.' : 'Demo build: payments are simulated; the Base escrow contract is ready to deploy.'}</span>
+      <span class="row" style="gap:12px;flex-wrap:wrap">
+        <a href="/pitch">Pitch</a>
+        <a href="/whitepaper">White paper</a>
+        <a href="/package">Package</a>
+        <span>${live ? 'Demo build: USDC runs on Base Sepolia with test funds; card payments are simulated.' : 'Demo build: payments are simulated; the Base escrow contract is ready to deploy.'}</span>
+      </span>
     </div>
   </footer>
 </div>`,

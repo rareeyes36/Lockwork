@@ -96,6 +96,10 @@ export default async function job(ctx) {
   const pct = (x) => `${Math.max(0, Math.min(100, (Number(x) / Number(e.amount)) * 100))}%`;
 
   const crumbs = html`<a href="#/c/${j.workspace_id}" style="color:inherit">${j.company_name}</a>${d.parent ? html` › <a href="#/job/${d.parent.id}" style="color:inherit">${d.parent.title}</a>` : ''}`;
+  const nestedBudgetHud = d.parent ? html`
+    <div class="note blue nested-budget-hud" style="margin-bottom:16px">
+      ${ic('split')}<div><b>Nested budget HUD</b> · parent remaining <b>${money(d.parent.remaining, d.parent.currency)}</b> · this carve-out ${money(e.amount, cur)} · <b>carve-out fee $0</b></div>
+    </div>` : '';
 
   /* ----- escrow actions ----- */
   const actions = [];
@@ -240,6 +244,7 @@ export default async function job(ctx) {
         </div>
       </div>
 
+      ${nestedBudgetHud}
       ${openCarve.length && active ? html`<div class="note blue" style="margin-bottom:16px">${ic('info')}<div>${openCarve.length} carve-out sub-job${openCarve.length > 1 ? 's are' : ' is'} still open. Close ${openCarve.length > 1 ? 'them' : 'it'} before paying a winner at this level. Refunds run bottom-up too.</div></div>` : ''}
 
       <div class="grid split">
@@ -556,7 +561,7 @@ export default async function job(ctx) {
       submitClass: 'green',
       body: html`
         ${!isEmployer ? html`<div class="note red" style="margin-bottom:12px">${ic('info')}<div>You're viewing as <b>${viewerName}</b>. Only ${j.employer_name} can pick the winner, so the server will refuse this.</div></div>` : ''}
-        <div class="row" style="margin-bottom:12px">${avatar(name, { bot })}<div><b>${name}</b>${bot ? html`<div class="tiny muted">Bot. Payout goes to its operator, ${s.bot_operator_name || '(none set)'}</div>` : html`<div class="tiny muted">Becomes an employee of ${j.company_name}</div>`}</div></div>
+        <div class="row" style="margin-bottom:12px">${avatar(name, { bot })}<div><b>${name}</b>${bot ? html`<div class="tiny muted">Bot. Payout goes to its operator, ${s.bot_operator_name || '(none set)'}</div>` : html`<div class="tiny muted">Hired into ${j.company_name} on a seat</div>`}</div></div>
         <div class="receipt" style="border-color:var(--line-2);background:var(--bg-2)">
           <div class="line"><span class="muted">Escrow</span><span>${money(e.amount, cur)}</span></div>
           ${paidCarve ? html`<div class="line"><span class="muted">Paid out via sub-jobs</span><span>− ${money(paidCarve, cur)}</span></div>` : ''}
@@ -592,7 +597,7 @@ export default async function job(ctx) {
           }
         }
         const r = await post(`/jobs/${j.id}/pay`, { submission_id: s.id, role_id: fd.role_id || undefined, tx_hash: txHash });
-        toast(`Paid ${money(r.fee.net_to_winner, r.fee.currency)} to ${r.payee.display_name}${r.employment ? ', hired' : ''}`);
+        toast(`Paid ${money(r.fee.net_to_winner, r.fee.currency)} to ${r.payee.display_name}${r.employment ? ', hired into the company' : ''}`);
         ctx.refresh();
       },
     });

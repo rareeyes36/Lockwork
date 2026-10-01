@@ -13,6 +13,18 @@ CREATE TABLE IF NOT EXISTS employer_reputation (
   )
 );
 
+-- Backfill public employer counters for databases that already had jobs before 022.
+INSERT INTO employer_reputation (user_id, jobs_posted_count, jobs_paid_out_count)
+SELECT j.employer_user_id,
+       count(*)::int,
+       count(*) FILTER (WHERE j.status = 'paid')::int
+  FROM jobs j
+ GROUP BY j.employer_user_id
+ON CONFLICT (user_id) DO UPDATE
+  SET jobs_posted_count = EXCLUDED.jobs_posted_count,
+      jobs_paid_out_count = EXCLUDED.jobs_paid_out_count,
+      updated_at = now();
+
 CREATE TABLE IF NOT EXISTS feed_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   kind text NOT NULL,

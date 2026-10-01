@@ -42,7 +42,7 @@ const NAV = [
   ['people', 'People', 'people', (c) => `/c/${c}/people`],
   ['roles', 'Roles', 'badge', (c) => `/c/${c}/roles`],
   ['bots', 'Bots', 'bot', (c) => `/c/${c}/bots`],
-  ['seats', 'Employees & seats', 'seat', (c) => `/c/${c}/seats`],
+  ['seats', 'Company seats', 'seat', (c) => `/c/${c}/seats`],
   ['sec', 'Production'],
   ['plugins', 'Plugins', 'plug', (c) => `/c/${c}/plugins`],
   ['sponsors', 'Sponsors', 'hand', (c) => `/c/${c}/sponsors`],

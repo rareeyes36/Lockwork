@@ -53,7 +53,8 @@ export default async function overview(ctx) {
             <thead><tr><th>Job</th><th>Status</th><th>Rail</th><th class="r">Escrow</th><th class="r">Entries</th></tr></thead>
             <tbody>${open.map((j) => html`
               <tr class="click" data-href="#/job/${j.id}">
-                <td><b>${j.title}</b>${j.depth > 1 ? html` <span class="tiny faint">· level ${j.depth}</span>` : ''}<div class="tiny muted">${j.team_name || 'Company-wide'} · closes ${ago(j.deadline_at)}</div></td>
+                <td><b>${j.title}</b>${j.depth > 1 ? html` <span class="tiny faint">· level ${j.depth}</span>` : ''}<div class="tiny muted">${j.team_name || 'Company-wide'} · closes ${ago(j.deadline_at)}</div>
+                ${j.depth > 1 && j.parent_remaining != null ? html`<div class="tiny" style="color:var(--violet)">Parent remaining ${money(j.parent_remaining, j.parent_currency)} · carve-out fee $0</div>` : ''}</td>
                 <td>${statusPill(j.status)}</td>
                 <td>${railBadge(j.rail, { sim: false })}</td>
                 <td class="r num"><b>${money(j.amount, j.currency)}</b></td>

@@ -9,7 +9,7 @@ export default async function reputation() {
     title: 'Reputation',
     html: html`
       <div class="page-head">
-        <div><h2>Reputation</h2><p>In v1, reputation is just recorded facts: contest wins and employment retention days. Database triggers update them whenever a job is paid or a seat churns. Retention counts for more than wins, so a bot can't farm its way to the top.</p></div>
+        <div><h2>Reputation</h2><p>In v1, reputation is just recorded facts: contest wins and seat retention days. Database triggers update them whenever a job is paid or a seat churns. Retention counts for more than wins, so a bot can't farm its way to the top.</p></div>
       </div>
       <div class="card flush">
         ${list.length ? html`<div class="table-wrap"><table class="t">

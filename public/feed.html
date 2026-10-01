@@ -41,7 +41,7 @@
       const p = ev.payload || {};
       const badge = KIND_BADGE[ev.kind] || '';
       const title = p.title || p.job_title || '—';
-      const actor = ev.actor_handle || p.actor_handle || '—';
+      const actor = ev.actor_handle || p.actor_handle || p.actor_label || '—';
       const company = ev.company_name || p.company_name || '—';
       const note = p.badge || p.note || p.status || ev.kind.replace(/_/g, ' ');
       const when = ev.created_at ? new Date(ev.created_at).toLocaleString() : '';

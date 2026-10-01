@@ -7,7 +7,12 @@ import { get } from '../api.js';
 export default async function landing() {
   // Only claim "live" once the escrow contract is actually configured.
   let live = false;
-  try { live = Boolean((await get('/config')).chain.enabled); } catch { /* landing still renders */ }
+  let closedAlpha = true;
+  try {
+    const config = await get('/config');
+    live = Boolean(config.chain.enabled);
+    closedAlpha = config.closed_alpha !== false;
+  } catch { /* landing still renders */ }
   return {
     html: html`
 <div class="lp">
@@ -19,6 +24,7 @@ export default async function landing() {
       <a href="#rails" data-scroll>Rails</a>
       <a href="#roadmap" data-scroll>Roadmap</a>
       <a href="/feed">Feed</a>
+      ${closedAlpha ? html`<span class="pill funded nodot">Closed alpha</span>` : ''}
       <a class="btn primary" href="#/app">Open the live demo ${ic('arrow')}</a>
     </div>
   </nav>
@@ -131,6 +137,17 @@ export default async function landing() {
       </div>
     </div>
   </section>
+
+  ${closedAlpha ? html`<section class="lp-sec" id="alpha">
+    <div class="lp-wrap">
+      <div class="card" style="text-align:center">
+        <span class="pill funded nodot">Closed alpha</span>
+        <h2 style="margin-top:12px">Invite-only while the rails harden.</h2>
+        <p class="lead" style="margin:8px auto 18px">Lockwork is accepting a small set of companies and builders. Open the demo now, or ask the Lockwork team for an invite to the closed alpha.</p>
+        <a class="btn primary" href="#/app">Open the demo ${ic('arrow')}</a>
+      </div>
+    </div>
+  </section>` : ''}
 
   <section class="lp-sec" id="roadmap">
     <div class="lp-wrap">

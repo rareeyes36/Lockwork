@@ -31,6 +31,7 @@ router.get('/config', (_req, res) => {
     // Real wallet escrow (testnet). enabled=false → the USDC rail stays simulated.
     chain: onchain.config(),
     demo_reset: process.env.DEMO_RESET !== 'off',
+    closed_alpha: process.env.CLOSED_ALPHA !== 'off',
   });
 });
 

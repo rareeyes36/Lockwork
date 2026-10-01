@@ -9,7 +9,7 @@ This repo is a working demo: Express + Postgres, with a single-page UI that has 
 | | |
 |---|---|
 | **Backend** | Node 20+, Express 5, Postgres 14+ (`server/`) |
-| **Schema** | 21 numbered migrations (`migrations/`), applied automatically on boot |
+| **Schema** | 22 numbered migrations (`migrations/`), applied automatically on boot |
 | **UI** | Plain HTML/CSS/JS modules with no build step (`public/`) |
 | **Payments** | **USDC on Base Sepolia is real**: a Lockwork escrow contract with wallet-signed transactions, using test USDC. The card rail is simulated. |
 | **Auth** | Demo stand-in: a "Viewing as" picker sends `X-Lockwork-As`, and the server enforces permissions for that person |
@@ -26,6 +26,8 @@ npm start              # → http://127.0.0.1:3847
 ```
 
 The default `DATABASE_URL` is `postgresql://contest:contest_local_dev@127.0.0.1:5432/contest_os`. You can put it in a `.env` file at the repo root.
+
+On Vercel, point `DATABASE_URL` at the target Postgres database and run `npm run migrate` against it before relying on the deployment (or let the first request complete the same migration runner). Migration **022** creates the public feed and employer-reputation tables; `/api/feed/seed` can backfill safe, dollar-free cards from existing jobs.
 
 | Command (at the repo root) | What it does |
 |---|---|
@@ -100,7 +102,7 @@ Before the meeting:
 
 - **Wake it up early.** Free services sleep after 15 minutes idle and take about a minute to wake. Open the link a few minutes before you present.
 - **Free Postgres expires 30 days after creation.** Upgrade it or recreate the Blueprint after that.
-- **Reset the data.** Click "Reset demo data" in the sidebar to start from a clean seed. Set `DEMO_RESET=off` in Render to hide that button once real data matters.
+- **Reset the data.** Click "Reset demo data" in the sidebar to start from a clean seed. Set `DEMO_RESET=off` in Render/Vercel to hide the button and reject the reset endpoint once real data matters. Keep it off for non-demo production databases.
 
 ## Demo script (about 5 minutes)
 
@@ -110,7 +112,7 @@ Before the meeting:
 4. **Jobs → "Pitch deck polish"**, a draft on USDC. Click **Lock with wallet** to run the simulated connect → approve → deposit flow, which ends with a tx hash.
 5. Set **Viewing as → Leo Okafor**, then click **Submit an entry**. The default demo URL renders as a read-only preview inside the job page.
 6. Set **Viewing as → Dante Final**. Click **Close entries → review**, then **Pick as winner**. The modal shows the release, the 2.5% fee and the winner's net before you confirm. You can grant a role on hire.
-7. Show the **receipt** (fee, net, simulated release tx) and the **Hired** card, then **Employees & seats**: set the seat to active, then churned, and watch **Reputation** bank the retention days.
+7. Show the **receipt** (fee, net, simulated release tx) and the **Hired** card, then **Company seats**: set the seat to active, then churned, and watch **Reputation** bank the retention days.
 8. **Sponsors**: set **Viewing as → Priya Nair** and try to pick a winner on the video job. The server refuses with *"Sponsors fund and fulfil. They never pick the winner."*
 9. **Roles / Bots / Plugins**: one lead bot per role (a second one is rejected), job-scoped bots stop when the job is decided, plugin subscriptions can be underwritten by a sponsor, and creating a role requires a minting role.
 10. **Fee calculator**: the $10k tree. Charging only on outward payouts (D1) takes $100. Also charging on carve-outs would take $275, and double-charging would take $350.
@@ -160,7 +162,7 @@ Grok's docs (`docs/`) were steering toward this order:
 
 ```
 docs/                design docs from the Grok sessions (brief, brand, money model, rails, decisions)
-migrations/          001–021 SQL, applied in order by server/migrate.js
+migrations/          001–022 SQL, applied in order by server/migrate.js
 contracts/          LockworkEscrow.sol (+ MockUSDC for tests), compile.js, build-viem.js
 app.js               Vercel entry: wraps the server app, migrates/seeds on first request
 vercel.json          Vercel config (Express preset, function settings)
@@ -181,3 +183,8 @@ server/
 ```
 
 Fixed from the original stub: winner reputation was counted twice (the `/pay` route and trigger 017 both incremented it). Now only the trigger counts it.
+
+## Product notes
+
+- Closed alpha is invite-only by default; set `CLOSED_ALPHA=off` to remove the landing-page label and copy.
+- Dispute desk v2 is intentionally **off for v1**.

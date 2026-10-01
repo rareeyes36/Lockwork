@@ -13,20 +13,20 @@ export default async function seats(ctx) {
   };
 
   return {
-    title: 'Employees & seats',
+    title: 'Company seats',
     html: html`
       <div class="page-head">
-        <div><h2>Employees & seats</h2><p>Every human winner joins the company as an employee on a seat. Seats start as pending, become active once billing starts (plan: $${price}/mo), and churned seats add their retention days to the person's reputation.</p></div>
+        <div><h2>Company seats</h2><p>Every human winner is hired into the company on a seat. Seats start as pending, become active once billing starts (plan: $${price}/mo), and churned seats add their retention days to the person's reputation.</p></div>
       </div>
       <div class="grid c4" style="margin-bottom:16px">
-        <div class="stat"><div class="k">${ic('seat')} Employees</div><div class="v">${employments.length}</div><div class="s">hired from contests</div></div>
+        <div class="stat"><div class="k">${ic('seat')} Company seats</div><div class="v">${employments.length}</div><div class="s">hired from contests</div></div>
         <div class="stat green"><div class="k">${ic('check')} Active seats</div><div class="v">${active}</div><div class="s">${count('pending')} pending · ${count('churned')} churned</div></div>
         <div class="stat gold"><div class="k">${ic('card')} Seat MRR (est.)</div><div class="v">${usd(active * price)}</div><div class="s">${usd(active * price * 12)} ARR</div></div>
         <div class="stat"><div class="k">${ic('star')} Conversion</div><div class="v">${employments.length ? Math.round((active / employments.length) * 100) : 0}%</div><div class="s">model assumes 40%</div></div>
       </div>
       <div class="card flush">
         ${employments.length ? html`<div class="table-wrap"><table class="t">
-          <thead><tr><th>Employee</th><th>Hired from</th><th>Role</th><th>Seat</th><th class="r">Won</th><th class="r">Tenure</th><th>Hired</th></tr></thead>
+          <thead><tr><th>Member</th><th>Hired from</th><th>Role</th><th>Seat</th><th class="r">Won</th><th class="r">Tenure</th><th>Hired</th></tr></thead>
           <tbody>${employments.map((e) => html`
             <tr>
               <td><div class="row" style="flex-wrap:nowrap">${avatar(e.employee_name, { sm: true })}<b>${e.employee_name}</b></div></td>
@@ -42,7 +42,7 @@ export default async function seats(ctx) {
               <td class="r num">${tenure(e)}d</td>
               <td class="small muted">${date(e.started_at)}<div class="tiny faint">${ago(e.started_at)}</div></td>
             </tr>`)}</tbody></table></div>`
-          : html`<div style="padding:18px"><div class="empty">Nobody hired yet. Pay a human winner on any job and they'll show up here.</div></div>`}
+          : html`<div style="padding:18px"><div class="empty">No seats yet. Pay a human winner on any job and they'll show up here.</div></div>`}
       </div>
       <div class="note" style="margin-top:14px">${ic('info')}<div>Seat billing is a stub in this demo. It turns on once custodial payments are live. Seats are always billed to the company, never to a sub-team.</div></div>`,
     mount(el) {

@@ -25,6 +25,7 @@ export default async function jobs(ctx) {
           <td style="padding-left:${14 + (j.depth - 1) * 18}px">
             ${j.depth > 1 ? html`<span class="faint">↳ </span>` : ''}<b>${j.title}</b> ${sourceBadge(j.budget_source)}
             <div class="tiny muted">by ${j.employer_name}${j.children ? ` · ${j.children} sub-job${j.children > 1 ? 's' : ''}` : ''}</div>
+            ${j.depth > 1 && j.parent_remaining != null ? html`<div class="tiny" style="color:var(--violet)">Parent remaining ${money(j.parent_remaining, j.parent_currency)} · carve-out fee $0</div>` : ''}
           </td>
           <td>${statusPill(j.status)}</td>
           <td>${railBadge(j.rail, { sim: false })}</td>

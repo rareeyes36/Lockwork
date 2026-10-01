@@ -20,6 +20,7 @@ const { loadCompany, assertCanPost, assertJobEmployer } = require('../access');
 const { adapterFor, carveout } = require('../escrow/adapters');
 const { PLATFORM_FEE_BPS, toMinor, fromMinor, releaseBreakdown } = require('../escrow/feeMath');
 const onchain = require('../escrow/onchainBase');
+const { insertFeedEvent } = require('./feed');
 
 const router = express.Router();
 
@@ -191,6 +192,16 @@ router.post('/jobs', asyncHandler(async (req, res) => {
        RETURNING *`,
       [job.id, rail, amount, currency, payer, PLATFORM_FEE_BPS, budgetSource]
     );
+    // Employer reputation is a public, money-free counter. Keep it in the
+    // same transaction as the job so profiles never lag the lifecycle.
+    await c.query(
+      `INSERT INTO employer_reputation (user_id, jobs_posted_count)
+       VALUES ($1, 1)
+       ON CONFLICT (user_id) DO UPDATE
+         SET jobs_posted_count = employer_reputation.jobs_posted_count + 1,
+             updated_at = now()`,
+      [employer]
+    );
     return { job, escrow: e.rows[0] };
   });
   res.status(201).json(out);
@@ -204,12 +215,22 @@ router.get('/jobs', asyncHandler(async (req, res) => {
     `SELECT j.*, e.amount, e.currency, e.rail, e.state AS escrow_state, e.fee_amount, e.net_to_winner,
             t.name AS team_name, u.display_name AS employer_name, w.name AS company_name,
             (SELECT count(*)::int FROM submissions s WHERE s.job_id = j.id AND s.status <> 'withdrawn') AS entries,
-            (SELECT count(*)::int FROM jobs cj WHERE cj.parent_job_id = j.id) AS children
+            (SELECT count(*)::int FROM jobs cj WHERE cj.parent_job_id = j.id) AS children,
+            pe.currency AS parent_currency,
+            pe.amount - COALESCE(pc.carved, 0) AS parent_remaining
        FROM jobs j
        JOIN workspaces w ON w.id = j.workspace_id
        JOIN users u ON u.id = j.employer_user_id
        LEFT JOIN job_escrows e ON e.job_id = j.id
        LEFT JOIN teams t ON t.id = j.team_id
+       LEFT JOIN jobs pj ON pj.id = j.parent_job_id
+       LEFT JOIN job_escrows pe ON pe.job_id = pj.id
+       LEFT JOIN LATERAL (
+         SELECT sum(ce.amount) AS carved
+           FROM jobs cj JOIN job_escrows ce ON ce.job_id = cj.id
+          WHERE cj.parent_job_id = pj.id AND cj.budget_source = 'parent_carveout'
+            AND ce.state IN ('funded', 'in_review', 'paid')
+       ) pc ON true
       WHERE ($1::uuid IS NULL OR j.workspace_id = $1)
         AND ($2::text IS NULL OR j.status = $2)
         AND ($3::text IS NULL OR e.rail = $3)
@@ -239,8 +260,17 @@ async function jobDetail(id) {
         WHERE e.job_id = $1`, [id]),
     job.parent_job_id
       ? pool.query(
-        `SELECT j.id, j.title, j.status, e.amount, e.currency FROM jobs j
-           LEFT JOIN job_escrows e ON e.job_id = j.id WHERE j.id = $1`, [job.parent_job_id])
+        `SELECT j.id, j.title, j.status, e.amount, e.currency,
+                e.amount - COALESCE(pc.carved, 0) AS remaining
+           FROM jobs j
+           LEFT JOIN job_escrows e ON e.job_id = j.id
+           LEFT JOIN LATERAL (
+             SELECT sum(ce.amount) AS carved
+               FROM jobs cj JOIN job_escrows ce ON ce.job_id = cj.id
+              WHERE cj.parent_job_id = j.id AND cj.budget_source = 'parent_carveout'
+                AND ce.state IN ('funded', 'in_review', 'paid')
+           ) pc ON true
+          WHERE j.id = $1`, [job.parent_job_id])
       : Promise.resolve({ rows: [] }),
     pool.query(
       `SELECT j.id, j.title, j.status, j.budget_source, j.depth, e.amount, e.currency, e.rail
@@ -377,6 +407,13 @@ router.post('/jobs/:id/fund', asyncHandler(async (req, res) => {
       [escrow.id, lock.escrowRef, JSON.stringify({ ...lock.meta, fee_on_lock: '0' })]
     );
     const j = await c.query(`UPDATE jobs SET status = 'funded' WHERE id = $1 RETURNING *`, [job.id]);
+    await insertFeedEvent(c, {
+      kind: 'job_funded',
+      actor_user_id: job.employer_user_id,
+      company_id: job.workspace_id,
+      job_id: job.id,
+      payload: { title: job.title, badge: 'funded', status: 'funded' },
+    });
     return { job: j.rows[0], escrow: e.rows[0], tx_ref: lock.txRef || null };
   });
   res.json(out);
@@ -528,6 +565,27 @@ router.post('/jobs/:id/pay', asyncHandler(async (req, res) => {
       [job.id, bot ? bot.id : null]
     );
 
+    await c.query(
+      `INSERT INTO employer_reputation (user_id, jobs_paid_out_count)
+       VALUES ($1, 1)
+       ON CONFLICT (user_id) DO UPDATE
+         SET jobs_paid_out_count = employer_reputation.jobs_paid_out_count + 1,
+             updated_at = now()`,
+      [job.employer_user_id]
+    );
+    await insertFeedEvent(c, {
+      kind: 'paid_hired',
+      actor_user_id: payee,
+      company_id: job.workspace_id,
+      job_id: job.id,
+      payload: {
+        title: job.title,
+        badge: 'hired',
+        status: 'paid',
+        winner_type: sub.submitter_type,
+      },
+    });
+
     return {
       job: paidJob.rows[0],
       escrow: paidEscrow.rows[0],
@@ -651,11 +709,15 @@ router.post('/jobs/:id/submissions', asyncHandler(async (req, res) => {
     if (submitter_user_id && submitter_user_id === job.employer_user_id) {
       throw new HttpError(400, 'The employer cannot enter their own job.');
     }
+    let feedActor = submitter_user_id || null;
+    let feedActorLabel = null;
     if (submitter_bot_id) {
       const b = (await c.query('SELECT * FROM bot_agents WHERE id = $1', [submitter_bot_id])).rows[0];
       if (!b) throw new HttpError(404, 'bot not found');
       if (b.workspace_id !== job.workspace_id) throw new HttpError(400, 'bot belongs to another company');
       if (b.status !== 'active') throw new HttpError(400, 'bot is stopped');
+      feedActor = b.config_json && b.config_json.operator_user_id ? b.config_json.operator_user_id : null;
+      feedActorLabel = b.name;
     }
     const s = await c.query(
       `INSERT INTO submissions (job_id, submitter_type, submitter_user_id, submitter_bot_id, demo_url, notes, status)
@@ -671,6 +733,18 @@ router.post('/jobs/:id/submissions', asyncHandler(async (req, res) => {
       );
       saved.push(r.rows[0]);
     }
+    await insertFeedEvent(c, {
+      kind: 'submission',
+      actor_user_id: feedActor,
+      company_id: job.workspace_id,
+      job_id: job.id,
+      payload: {
+        title: job.title,
+        badge: 'submitted',
+        status: 'submitted',
+        ...(feedActorLabel ? { actor_label: feedActorLabel, actor_type: 'bot' } : { actor_type: 'user' }),
+      },
+    });
     return { ...s.rows[0], assets: saved };
   });
   res.status(201).json(out);

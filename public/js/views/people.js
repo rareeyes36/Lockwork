@@ -1,7 +1,7 @@
 import { html, ic, avatar, short, formModal, toast, on, $$ } from '../ui.js';
 import { get, post, patch } from '../api.js';
 
-const TABS = [['all', 'Everyone'], ['employer', 'Employers'], ['employee', 'Employees'], ['sponsor', 'Sponsors'], ['entrant', 'Entrants']];
+const TABS = [['all', 'Everyone'], ['employer', 'Employers'], ['employee', 'Company members'], ['sponsor', 'Sponsors'], ['entrant', 'Entrants']];
 
 function tags(p) {
   const t = [];
@@ -32,7 +32,7 @@ export default async function people(ctx) {
       </div>
       <div class="row" style="gap:6px;margin-top:12px">
         ${p.is_owner ? html`<span class="pill gold">${ic('crown', 12)} Owner / employer</span>` : tg.includes('employer') ? html`<span class="pill gold">Employer</span>` : ''}
-        ${(p.employments || []).map((e) => html`<span class="pill ${e.seat_status === 'active' ? 'paid' : e.seat_status === 'churned' ? 'grey' : 'funded'}">Employee · seat ${e.seat_status}</span>`)}
+        ${(p.employments || []).map((e) => html`<span class="pill ${e.seat_status === 'active' ? 'paid' : e.seat_status === 'churned' ? 'grey' : 'funded'}">Company seat · ${e.seat_status}</span>`)}
         ${(p.sponsorships || []).map((s) => html`<span class="pill violet">Sponsor · ${s.name}</span>`)}
         ${!tg.length ? html`<span class="pill grey">No link to this company yet</span>` : ''}
       </div>
@@ -55,7 +55,7 @@ export default async function people(ctx) {
     title: 'People',
     html: html`
       <div class="page-head">
-        <div><h2>People</h2><p>Employer, employee and sponsor are roles, not account types. Anyone can fill them, and the same person can hold different roles in different companies and jobs.</p></div>
+        <div><h2>People</h2><p>Employer, company member and sponsor are roles, not account types. Anyone can fill them, and the same person can hold different roles in different companies and jobs.</p></div>
         <button class="btn primary" data-act="add">${ic('plus')} Add person</button>
       </div>
       <div class="seg" id="tabs" style="margin-bottom:16px">${TABS.map(([v, l]) => html`<button data-v="${v}" class="${v === tab ? 'on' : ''}">${l}</button>`)}</div>

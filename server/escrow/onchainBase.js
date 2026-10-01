@@ -30,11 +30,17 @@ const BASE_SEPOLIA = {
 // Dante treasury — production feeRecipient on deploy (override with LOCKWORK_FEE_RECIPIENT).
 const DEFAULT_FEE_RECIPIENT = '0x47D0A167FF6A5508440ef6D8902076A7aaD0844C';
 
+function cleanAddr(raw) {
+  if (raw == null) return '';
+  return String(raw).trim().replace(/^['"]|['"]$/g, '').trim();
+}
+
 function config() {
-  const escrow = process.env.LOCKWORK_ESCROW_ADDRESS || '';
+  const escrow = cleanAddr(process.env.LOCKWORK_ESCROW_ADDRESS);
   const chainId = Number(process.env.LOCKWORK_CHAIN_ID || BASE_SEPOLIA.id);
   const isBaseSepolia = chainId === BASE_SEPOLIA.id;
-  const feeRaw = process.env.LOCKWORK_FEE_RECIPIENT || DEFAULT_FEE_RECIPIENT;
+  const feeRaw = cleanAddr(process.env.LOCKWORK_FEE_RECIPIENT) || DEFAULT_FEE_RECIPIENT;
+  const lockworkKeys = Object.keys(process.env).filter((k) => k.startsWith('LOCKWORK_')).sort();
   return {
     enabled: isAddress(escrow),
     escrow: isAddress(escrow) ? getAddress(escrow) : null,
@@ -45,6 +51,10 @@ function config() {
     rpc: process.env.LOCKWORK_RPC_URL || BASE_SEPOLIA.rpc,
     explorer: process.env.LOCKWORK_EXPLORER_URL || (isBaseSepolia ? BASE_SEPOLIA.explorer : null),
     testnet: true,
+    // Debug (names only / length): confirms whether Vercel injected the env.
+    escrow_env_present: Boolean(process.env.LOCKWORK_ESCROW_ADDRESS),
+    escrow_env_len: escrow.length,
+    lockwork_keys: lockworkKeys,
   };
 }
 

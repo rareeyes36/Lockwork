@@ -156,3 +156,5 @@ Public and WP/deck language: **hired role / company seat** — avoid EoR-looking
 | Seat billing charge | **Not live yet** (#4) — tables above remain model assumptions until keep 30/60/90 is measured |
 
 *Product:* [https://lockwork-dun.vercel.app/](https://lockwork-dun.vercel.app/) · *Config:* [/api/config](https://lockwork-dun.vercel.app/api/config)
+
+**Seat keep pass (post-#4 stub):** see [`SEAT_KEEP_306090.md`](./SEAT_KEEP_306090.md) — Base band still ~40% paying/win → Early ~$64k ARR; hold 250 bps.

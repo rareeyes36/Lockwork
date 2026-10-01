@@ -224,10 +224,29 @@ Contest win = CAC; paid seat = ARR. Live billing after custodial rail.
 | amount | numeric(20,8) | |
 | currency | text | |
 | state | text | `pledged` \| `locked` \| `released` \| `refunded` |
-| placement_fee_bps | int null | platform fee on sponsor side when live |
+| placement_fee_bps | int null | snapshot (500); charged via placement_invoices on lock/attach |
 | created_at | timestamptz | |
 
 **Hard rule:** sponsors never veto winner selection. Financing sponsors may co-lock % of escrow or top-up only.
+
+### placement_invoices (backlog #14 — sponsor placement fee @ 500 bps)
+| column | type | notes |
+|--------|------|-------|
+| id | uuid pk | |
+| contribution_id | uuid fk → sponsor_contributions | financing attach this fee belongs to |
+| workspace_id | uuid fk → workspaces | company billed |
+| job_id | uuid fk → jobs | |
+| amount | numeric(20,8) | snapshotted: contribution.amount × placement_fee_bps / 10000 |
+| currency | text | from contribution |
+| placement_fee_bps | int | default 500 (snapshot) |
+| state | text | `open` \| `paid` \| `void` |
+| rail | text | `custodial_sim` (invoice recorded / mark-paid stub) \| `stripe` (reserved, not live) |
+| invoice_ref | text null | e.g. `place-sim-…` |
+| paid_at / voided_at | timestamptz null | |
+| meta_json | jsonb | `{ sim, stripe_live }` now; Stripe payment ids later |
+| created_at | timestamptz | |
+
+**API:** `POST /contributions/:id/placement-invoices` → open charge (contribution must be locked); `POST /placement-invoices/:id/pay` → paid; `POST /contributions/:id/placement-attach` → lock (if pledged) + invoice + mark-paid one-shot; `POST /jobs/:id/sponsor-attach` → create locked financing contrib + pay fee. Refund of a pledged/locked-unpaid contribution voids open placement invoices; **no platform release fee** on that unwind. Does not touch release fee (`platform_fee_bps` 250) or escrow.
 
 ### worker_reputation (Genius #5 — facts now, gates later)
 | column | type | notes |

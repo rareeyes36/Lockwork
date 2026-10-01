@@ -182,6 +182,8 @@ export default async function job(ctx) {
     </div>` : '';
 
   const jobSponsors = d.sponsors;
+  const placeBps = (ctx.config && ctx.config.placement_fee_bps) || 500;
+  const canAttachSponsor = ['draft', 'funded', 'in_review'].includes(j.status) && jobSponsors.length > 0;
   const sponsorsCard = html`
     <div class="card">
       <div class="card-head"><h3>${ic('hand')} Sponsors</h3><a class="small" href="#/c/${j.workspace_id}/sponsors">Manage →</a></div>
@@ -190,10 +192,18 @@ export default async function job(ctx) {
         return html`<div>
           <div class="row" style="gap:7px"><b>${s.name}</b>${s.kinds.map((k) => html`<span class="chip">${k}</span>`)}</div>
           <div class="tiny muted">${s.job_id ? 'This job' : 'Company-wide'}${s.sponsor_person ? ` · ${s.sponsor_person}` : ''}</div>
-          ${contribs.map((c) => html`<div class="small" style="margin-top:4px">${c.kind.replace('_', '-')} <b class="num">${money(c.amount, c.currency)}</b> <span class="pill ${c.state === 'locked' ? 'funded' : c.state === 'released' ? 'paid' : 'grey'}">${c.state}</span></div>`)}
+          ${contribs.map((c) => html`<div class="small" style="margin-top:4px">${c.kind.replace('_', '-')} <b class="num">${money(c.amount, c.currency)}</b> <span class="pill ${c.state === 'locked' ? 'funded' : c.state === 'released' ? 'paid' : 'grey'}">${c.state}</span>
+            ${c.placement_fee_state === 'paid' ? html` <span class="pill paid">fee ${money(c.placement_fee_amount, c.currency)}</span>`
+              : c.state === 'pledged' ? html` <button class="btn sm primary" data-act="place-attach" data-id="${c.id}">Lock &amp; pay ${placeBps / 100}%</button>`
+              : ''}
+          </div>`)}
         </div>`;
       })}</div>` : html`<p class="small muted">No sponsors yet.</p>`}
-      <div class="note" style="margin-top:12px">${ic('shield')}<div>Sponsors fund and fulfil, but they never pick the winner.</div></div>
+      ${canAttachSponsor ? html`
+        <button class="btn sm primary" style="margin-top:12px" data-act="sponsor-attach">${ic('card', 14)} Attach financing (${placeBps / 100}% fee)</button>
+        <div class="tiny faint" style="margin-top:6px">Locks a co-lock contribution and pays the placement invoice (custodial-sim).</div>
+      ` : ''}
+      <div class="note" style="margin-top:12px">${ic('shield')}<div>Sponsors fund and fulfil, but they never pick the winner. Placement fee is separate from the 2.5% release fee.</div></div>
     </div>`;
 
   const botsCard = html`
@@ -292,12 +302,51 @@ export default async function job(ctx) {
             toast(r.already_active ? 'Company seat already active' : 'Company seat attached · $79/mo invoice paid (sim)');
             ctx.refresh();
           }
+          if (act === 'place-attach') {
+            const r = await post(`/contributions/${t.dataset.id}/placement-attach`, {});
+            toast(r.already_attached
+              ? 'Placement already attached'
+              : `Placement fee ${money(r.invoice.amount, r.invoice.currency)} paid (sim)`);
+            ctx.refresh();
+          }
+          if (act === 'sponsor-attach') {
+            attachSponsorFinancing();
+          }
         } catch (ex) {
           toast(ex.message, 'err');
         }
       });
     },
   };
+
+
+  function attachSponsorFinancing() {
+    const financing = jobSponsors.filter((s) => !s.job_id || s.job_id === j.id);
+    if (!financing.length) {
+      toast('Add a company or job sponsor first', 'err');
+      return;
+    }
+    formModal({
+      title: 'Attach financing sponsor',
+      submit: 'Attach & pay placement fee',
+      body: html`<div class="form-grid">
+        <label class="field span-2">Sponsor<select name="sponsor_id">${options(financing, { label: (s) => `${s.name} (${(s.kinds || []).join(', ')})` })}</select></label>
+        <label class="field">Kind<select name="kind"><option value="co_lock">Co-lock escrow</option><option value="top_up">Top-up</option></select></label>
+        <label class="field">Amount<input name="amount" type="number" min="1" step="0.01" value="1000" required></label>
+      </div>
+      <p class="small muted" style="margin-top:10px">Creates a locked contribution and pays ${(placeBps / 100)}% placement fee (custodial-sim). Does not change the 2.5% release fee.</p>`,
+      async handler(f) {
+        const r = await post(`/jobs/${j.id}/sponsor-attach`, {
+          sponsor_id: f.sponsor_id,
+          amount: f.amount,
+          kind: f.kind,
+          currency: cur,
+        });
+        toast(`Financing attached · fee ${money(r.invoice.amount, r.invoice.currency)} paid (sim)`);
+        ctx.refresh();
+      },
+    });
+  }
 
   /* ----- flows ----- */
 

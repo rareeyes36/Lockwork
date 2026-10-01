@@ -297,7 +297,20 @@ async function jobDetail(id) {
          FROM sponsors sp LEFT JOIN users u ON u.id = sp.sponsor_user_id
         WHERE sp.job_id = $1 OR sp.workspace_id = $2 ORDER BY sp.created_at`, [id, job.workspace_id]),
     pool.query(
-      `SELECT sc.*, sp.name AS sponsor_name FROM sponsor_contributions sc
+      `SELECT sc.*, sp.name AS sponsor_name,
+              (SELECT pi.id FROM placement_invoices pi
+                WHERE pi.contribution_id = sc.id AND pi.state IN ('open','paid')
+                ORDER BY CASE pi.state WHEN 'paid' THEN 0 ELSE 1 END, pi.created_at DESC LIMIT 1) AS placement_invoice_id,
+              (SELECT pi.amount FROM placement_invoices pi
+                WHERE pi.contribution_id = sc.id AND pi.state IN ('open','paid')
+                ORDER BY CASE pi.state WHEN 'paid' THEN 0 ELSE 1 END, pi.created_at DESC LIMIT 1) AS placement_fee_amount,
+              (SELECT pi.state FROM placement_invoices pi
+                WHERE pi.contribution_id = sc.id AND pi.state IN ('open','paid')
+                ORDER BY CASE pi.state WHEN 'paid' THEN 0 ELSE 1 END, pi.created_at DESC LIMIT 1) AS placement_fee_state,
+              (SELECT pi.paid_at FROM placement_invoices pi
+                WHERE pi.contribution_id = sc.id AND pi.state = 'paid'
+                ORDER BY pi.paid_at DESC NULLS LAST LIMIT 1) AS placement_paid_at
+         FROM sponsor_contributions sc
          JOIN sponsors sp ON sp.id = sc.sponsor_id WHERE sc.job_id = $1 ORDER BY sc.created_at`, [id]),
     pool.query(
       `SELECT b.*, op.display_name AS operator_name FROM bot_agents b

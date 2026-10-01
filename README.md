@@ -113,7 +113,7 @@ Before the meeting:
 5. Set **Viewing as → Leo Okafor**, then click **Submit an entry**. The default demo URL renders as a read-only preview inside the job page.
 6. Set **Viewing as → Dante Final**. Click **Close entries → review**, then **Pick as winner**. The modal shows the release, the 2.5% fee and the winner's net before you confirm. You can grant a role on hire.
 7. Show the **receipt** (fee, net, simulated release tx) and the **Hired into company** card → **Attach company seat ($79/mo)** (records a custodial-sim invoice and activates the seat). On **Company seats**, churn later to bank retention days on **Reputation**.
-8. **Sponsors**: set **Viewing as → Priya Nair** and try to pick a winner on the video job. The server refuses with *"Sponsors fund and fulfil. They never pick the winner."*
+8. **Sponsors**: on a funded job, **Attach financing (5% fee)** (or Sponsors → Lock & pay fee) records a placement invoice at 500 bps and marks it paid (custodial-sim). Set **Viewing as → Priya Nair** and try to pick a winner — the server refuses with *"Sponsors fund and fulfil. They never pick the winner."*
 9. **Roles / Bots / Plugins**: one lead bot per role (a second one is rejected), job-scoped bots stop when the job is decided, plugin subscriptions can be underwritten by a sponsor, and creating a role requires a minting role.
 10. **Fee calculator**: the $10k tree. Charging only on outward payouts (D1) takes $100. Also charging on carve-outs would take $275, and double-charging would take $350.
 
@@ -131,6 +131,7 @@ Before the meeting:
 - reputation triggers
 - roles and lead-bot uniqueness
 - sponsor contributions
+- placement invoices (`placement_invoices`) at 500 bps that stick on financing attach (amount snapshotted)
 - plugin subscriptions
 - all permission checks for the selected person
 
@@ -142,6 +143,7 @@ Before the meeting:
 - bots, which are config stubs that enter and win like people do
 - login
 - seat *payment* (custodial-sim mark-paid; Stripe not live — invoices still persist)
+- placement *payment* (custodial-sim mark-paid at 500 bps; Stripe not live — invoices still persist)
 
 ## Where Grok was heading, in brief
 
@@ -163,7 +165,7 @@ Grok's docs (`docs/`) were steering toward this order:
 
 ```
 docs/                design docs from the Grok sessions (brief, brand, money model, rails, decisions)
-migrations/          001–023 SQL, applied in order by server/migrate.js
+migrations/          001–024 SQL, applied in order by server/migrate.js
 contracts/          LockworkEscrow.sol (+ MockUSDC for tests), compile.js, build-viem.js
 app.js               Vercel entry: wraps the server app, migrates/seeds on first request
 vercel.json          Vercel config (Express preset, function settings)

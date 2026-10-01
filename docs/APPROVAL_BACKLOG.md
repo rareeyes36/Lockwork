@@ -24,7 +24,7 @@
 ## Compounding (after core)
 12. ENS / Base name as company+worker identity
 13. On-chain “paid+hired” attestation (portable credit)
-14. Sponsor attach path live (500 bps placement)
+14. Sponsor attach path live (500 bps placement) — **DONE** (custodial_sim invoices; Stripe reserved; platform fee still 250 bps)
 15. Plugin / bot tolls (later income layer)
 16. Social-credit / demerit enforcement wired to fee clawback rarity
 17. Regulatory copy pass (custody + “employee/hire” wording for WP/deck) — *brief note landed in `WHITEPAPER.md` §8 + deck copy rule; full counsel pass still open*

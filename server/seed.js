@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const { pool } = require('./db');
 
 const TABLES = [
-  'chain_txs', 'seat_invoices', 'sponsor_contributions', 'sponsors', 'workspace_plugins', 'employments', 'submission_assets',
+  'chain_txs', 'placement_invoices', 'seat_invoices', 'sponsor_contributions', 'sponsors', 'workspace_plugins', 'employments', 'submission_assets',
   'submissions', 'job_escrows', 'role_assignments', 'bot_agents', 'jobs', 'teams', 'roles',
   'worker_reputation', 'workspaces', 'users',
 ];
@@ -163,7 +163,8 @@ async function seed({ reset = true } = {}) {
     await api('POST', `/jobs/${video1.job.id}/submissions`, { submitter_user_id: ivy.id, demo_url: preview('video', 'Product explainer', 'Ivy Park'), notes: 'Two cuts attached.' });
     await api('POST', `/jobs/${video1.job.id}/submissions`, { submitter_user_id: leo.id, demo_url: preview('video', 'Explainer v2', 'Leo Okafor') });
     const c1 = await api('POST', `/sponsors/${grants.id}/contributions`, { job_id: video1.job.id, kind: 'co_lock', amount: 600 });
-    await api('PATCH', `/contributions/${c1.id}`, { state: 'locked' });
+    // Lock + pay 500 bps placement fee (custodial-sim) so demo shows paid placement invoices.
+    await api('POST', `/contributions/${c1.id}/placement-attach`, {});
     await api('POST', `/sponsors/${grants.id}/contributions`, { job_id: root.job.id, kind: 'top_up', amount: 1000, currency: 'USDC' });
     await api('POST', `/companies/${co.id}/sponsors`, {
       name: 'PrintRun', kinds: ['materials', 'services'], job_id: video1.job.id,

@@ -17,10 +17,11 @@ const PUBLIC_DIR = path.join(__dirname, '..', '..', 'public');
 
 /** Strip money / escrow / fee / seat-price keys from public feed payloads. */
 const MONEY_KEYS = new Set([
-  'amount', 'fee', 'fee_amount', 'fee_bps', 'platform_fee_bps', 'net_to_winner',
+  'amount', 'fee', 'fee_amount', 'fee_bps', 'platform_fee_bps', 'placement_fee_bps',
+  'placement_fee_amount', 'net_to_winner',
   'currency', 'escrow', 'escrow_ref', 'escrow_tier', 'seat_price', 'seat_prices', 'seat_price_usd',
   'budget', 'payout', 'price', 'usd', 'dollars', 'rail',
-  'usdc', 'usd_cents', 'carved_out_amount', 'refund_amount',
+  'usdc', 'usd_cents', 'carved_out_amount', 'refund_amount', 'gmv',
 ]);
 
 function stripMoney(obj) {

@@ -43,7 +43,7 @@ export default async function overview(ctx) {
         <div class="stat"><div class="k">${ic('refund')} Refunded</div><div class="v">${usd(stats.refunded)}</div><div class="s">${stats.jobs_refunded} jobs · 0 fee</div></div>
         <div class="stat"><div class="k">${ic('seat')} Active seats</div><div class="v">${stats.seats.active}</div><div class="s">${stats.seats.pending} pending · ${stats.seats.churned} churned</div></div>
         <div class="stat"><div class="k">${ic('card')} Seat MRR (est.)</div><div class="v">${usd(stats.seats.mrr_estimate)}</div><div class="s">$${stats.seats.seat_price_usd}/mo per active seat</div></div>
-        <div class="stat"><div class="k">${ic('hand')} Sponsor committed</div><div class="v">${usd(stats.sponsors.committed)}</div><div class="s">${usd(stats.sponsors.placement_fees)} placement fees (5%)</div></div>
+        <div class="stat"><div class="k">${ic('hand')} Sponsor committed</div><div class="v">${usd(stats.sponsors.committed)}</div><div class="s">${usd(stats.sponsors.placement_fees_paid || stats.sponsors.placement_fees)} placement fees paid @ 5%</div></div>
         <div class="stat"><div class="k">${ic('bot')} Active bots</div><div class="v">${stats.bots_active}</div><div class="s">${stats.roles} roles · ${stats.plugins} plugins</div></div>
       </div>
 

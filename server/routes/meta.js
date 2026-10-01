@@ -31,6 +31,13 @@ router.get('/config', (_req, res) => {
       stripe_live: false,
       note: 'Post-hire company seat invoices persist; mark-paid is custodial-sim until Stripe.',
     },
+    placement_billing: {
+      fee_bps: PLACEMENT_FEE_BPS,
+      rail: 'custodial_sim',
+      simulated: true,
+      stripe_live: false,
+      note: 'Sponsor placement invoices persist at 500 bps; mark-paid is custodial-sim until Stripe.',
+    },
     max_depth: 3,
     rails: {
       custodial: { label: 'Card / balance (custodial)', currency: 'USD', simulated: true },
@@ -82,7 +89,12 @@ router.get('/stats', asyncHandler(async (req, res) => {
   );
   const sponsor = await pool.query(
     `SELECT COALESCE(sum(sc.amount) FILTER (WHERE sc.state IN ('locked','released')), 0) AS committed,
-            COALESCE(sum(sc.amount * sc.placement_fee_bps / 10000.0) FILTER (WHERE sc.state IN ('locked','released')), 0) AS placement_fees
+            COALESCE(sum(sc.amount * sc.placement_fee_bps / 10000.0) FILTER (WHERE sc.state IN ('locked','released')), 0) AS placement_fees,
+            COALESCE((
+              SELECT sum(pi.amount) FROM placement_invoices pi
+               JOIN jobs pj ON pj.id = pi.job_id
+              WHERE pi.state = 'paid' AND ($1::uuid IS NULL OR pj.workspace_id = $1)
+            ), 0) AS placement_fees_paid
        FROM sponsor_contributions sc JOIN jobs j ON j.id = sc.job_id
       WHERE ($1::uuid IS NULL OR j.workspace_id = $1)`,
     [cid]

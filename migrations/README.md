@@ -22,3 +22,4 @@ Order matters: the `jobs.winner_submission_id` FK is added in `009`, after `subm
 - `021_chain_txs.sql`: records every verified on-chain transaction hash so one lock, release or refund transaction can back only one action.
 - `022_profile_feed.sql`: `employer_reputation`, `feed_events`, `form_state` for the public `/feed` + `/u/:handle` shell (no money columns); backfills employer counters from existing jobs.
 - `023_seat_billing.sql`: `seat_invoices` — company seat charges that stick after hire (custodial-sim mark-paid; Stripe reserved).
+- `024_placement_billing.sql`: `placement_invoices` — sponsor placement fee @ 500 bps (custodial-sim mark-paid; Stripe reserved). Separate from release fee 250 bps.

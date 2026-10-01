@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const { pool } = require('./db');
 
 const TABLES = [
-  'chain_txs', 'sponsor_contributions', 'sponsors', 'workspace_plugins', 'employments', 'submission_assets',
+  'chain_txs', 'seat_invoices', 'sponsor_contributions', 'sponsors', 'workspace_plugins', 'employments', 'submission_assets',
   'submissions', 'job_escrows', 'role_assignments', 'bot_agents', 'jobs', 'teams', 'roles',
   'worker_reputation', 'workspaces', 'users',
 ];
@@ -206,6 +206,25 @@ async function seed({ reset = true } = {}) {
     await pool.query(
       `UPDATE employments SET started_at = now() - interval '43 days', seat_status = 'active',
               seat_started_at = now() - interval '41 days' WHERE job_id = $1`, [past2.job.id]);
+
+    // Persist company-seat invoices so billing sticks in the seeded demo (custodial-sim).
+    await pool.query(
+      `INSERT INTO seat_invoices (
+         employment_id, workspace_id, amount, currency, plan, state, rail,
+         invoice_ref, period_start, period_end, paid_at, meta_json, created_at
+       )
+       SELECT em.id, em.workspace_id, 79, 'USD', COALESCE(em.seat_plan, 'workspace_member'), 'paid', 'custodial_sim',
+              'seat-sim-seed-' || substr(em.id::text, 1, 8),
+              COALESCE(em.seat_started_at, em.started_at),
+              COALESCE(em.seat_started_at, em.started_at) + interval '30 days',
+              COALESCE(em.seat_started_at, em.started_at),
+              jsonb_build_object('sim', true, 'stripe_live', false, 'seed', true),
+              COALESCE(em.seat_started_at, em.started_at)
+         FROM employments em
+        WHERE em.job_id = ANY($1::uuid[])
+          AND NOT EXISTS (SELECT 1 FROM seat_invoices si WHERE si.employment_id = em.id AND si.state = 'paid')`,
+      [[past1.job.id, past2.job.id]]
+    );
 
     return { ok: true, company_id: co.id, people: 6 };
   });

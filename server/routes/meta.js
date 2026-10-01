@@ -23,6 +23,14 @@ router.get('/config', (_req, res) => {
     platform_fee_bps: PLATFORM_FEE_BPS,
     placement_fee_bps: PLACEMENT_FEE_BPS,
     seat_price_usd: SEAT_PRICE_USD,
+    seat_billing: {
+      plan: 'workspace_member',
+      price_usd: SEAT_PRICE_USD,
+      rail: 'custodial_sim',
+      simulated: true,
+      stripe_live: false,
+      note: 'Post-hire company seat invoices persist; mark-paid is custodial-sim until Stripe.',
+    },
     max_depth: 3,
     rails: {
       custodial: { label: 'Card / balance (custodial)', currency: 'USD', simulated: true },

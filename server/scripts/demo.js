@@ -60,6 +60,16 @@ function assert(cond, msg) {
   assert(pa.employment.seat_status === 'pending', 'employment pending');
   console.log('  ✓ custodial: fee', pa.fee.fee_amount, 'net', pa.fee.net_to_winner, 'USD; seat', pa.employment.seat_status);
 
+  // 1b. Company seat attach @ $79 (custodial-sim invoice that sticks).
+  const seat = await api('POST', `/employments/${pa.employment.id}/seat-attach`, {}, emp.id);
+  assert(seat.employment.seat_status === 'active', 'seat active after attach');
+  assert(Number(seat.invoice.amount) === 79, `seat amount ${seat.invoice.amount}`);
+  assert(seat.invoice.state === 'paid' && seat.invoice.rail === 'custodial_sim', 'seat invoice paid sim');
+  assert(seat.billing && seat.billing.stripe_live === false, 'stripe not live');
+  const seatsList = await api('GET', `/companies/${co.id}/seat-invoices`);
+  assert(seatsList.invoices.some((i) => i.id === seat.invoice.id && i.state === 'paid'), 'seat invoice listed');
+  console.log('  ✓ company seat attached: $' + seat.invoice.amount + '/mo invoice', seat.invoice.invoice_ref, '→', seat.employment.seat_status);
+
   // 2. On-chain (sim) rail with a carve-out sub-job won by a bot.
   const b = await api('POST', '/jobs', { company_id: co.id, title: 'Treasury bot', requirements: 'Alerts', amount: 10000, rail: 'onchain' });
   const fb = await api('POST', `/jobs/${b.job.id}/fund`);

@@ -168,9 +168,12 @@ export default async function job(ctx) {
 
   const hireCard = d.employment ? html`
     <div class="card">
-      <div class="card-head"><h3>${ic('seat')} Hired</h3><span class="pill ${d.employment.seat_status === 'active' ? 'paid' : d.employment.seat_status === 'churned' ? 'grey' : 'funded'}">seat ${d.employment.seat_status}</span></div>
+      <div class="card-head"><h3>${ic('seat')} Hired into company</h3><span class="pill ${d.employment.seat_status === 'active' ? 'paid' : d.employment.seat_status === 'churned' ? 'grey' : 'funded'}">seat ${d.employment.seat_status}</span></div>
       <div class="row">${avatar(d.employment.employee_name)}<div><b>${d.employment.employee_name}</b><div class="tiny muted">joined ${j.company_name}${d.employment.role_name ? ` as ${d.employment.role_name}` : ''}</div></div></div>
-      <a class="btn sm" style="margin-top:12px" href="#/c/${j.workspace_id}/seats">Manage seat ($79/mo plan) →</a>
+      ${d.employment.seat_status === 'pending' ? html`
+        <button class="btn sm primary" style="margin-top:12px" data-act="seat-attach" data-id="${d.employment.id}">${ic('card', 14)} Attach company seat ($79/mo)</button>
+        <div class="tiny faint" style="margin-top:6px">Records a company invoice and activates the seat (custodial-sim until Stripe).</div>
+      ` : html`<a class="btn sm" style="margin-top:12px" href="#/c/${j.workspace_id}/seats">Manage company seat →</a>`}
     </div>` : winner && winner.submitter_type === 'bot' ? html`
     <div class="card">
       <div class="card-head"><h3>${ic('bot')} Bot won</h3></div>
@@ -284,6 +287,11 @@ export default async function job(ctx) {
           if (act === 'subjob') openSubJob(ctx, { id: j.id, title: j.title, currency: cur, rail: e.rail, remaining: budget.remaining });
           if (act === 'spin-bot') spinBot();
           if (act === 'promote') promote(t.dataset.id);
+          if (act === 'seat-attach') {
+            const r = await post(`/employments/${t.dataset.id}/seat-attach`, {});
+            toast(r.already_active ? 'Company seat already active' : 'Company seat attached · $79/mo invoice paid (sim)');
+            ctx.refresh();
+          }
         } catch (ex) {
           toast(ex.message, 'err');
         }

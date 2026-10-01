@@ -194,6 +194,26 @@ Postgres-oriented. UUIDs for public ids. Timestamps `timestamptz`. Money as `num
 
 Contest win = CAC; paid seat = ARR. Live billing after custodial rail.
 
+### seat_invoices (backlog #4 — company seat billing)
+| column | type | notes |
+|--------|------|-------|
+| id | uuid pk | |
+| employment_id | uuid fk → employments | hire this seat belongs to |
+| workspace_id | uuid fk → workspaces | company billed (never sub-team) |
+| amount | numeric(20,8) | snapshotted from `seat_price_usd` at charge |
+| currency | text | default `USD` |
+| plan | text | `workspace_member` |
+| state | text | `open` \| `paid` \| `void` |
+| rail | text | `custodial_sim` (invoice recorded / mark-paid stub) \| `stripe` (reserved, not live) |
+| invoice_ref | text null | e.g. `seat-sim-…` |
+| period_start / period_end | timestamptz | monthly window |
+| paid_at / voided_at | timestamptz null | |
+| meta_json | jsonb | `{ sim, stripe_live }` now; Stripe payment ids later |
+| created_at | timestamptz | |
+
+**API:** `POST /employments/:id/seat-invoices` → open charge; `POST /seat-invoices/:id/pay` → paid + seat `active`; `POST /employments/:id/seat-attach` → one-shot. Amount from config `seat_price_usd` ($79). Does not touch release fee (250 bps) or escrow.
+
+
 ### sponsor_contributions (Genius #3 — new table)
 | column | type | notes |
 |--------|------|-------|

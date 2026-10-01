@@ -9,6 +9,7 @@ const ACT = {
   paid: ['trophy', 'paid'],
   refunded: ['refund', 'refunded'],
   hired: ['seat', 'hired'],
+  seat_attached: ['card', 'seat attached'],
   sponsored: ['hand', 'sponsored'],
 };
 

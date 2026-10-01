@@ -160,7 +160,7 @@ Do not invent a raise number. Treasury is live; ask slide still scaffolded until
 - Contact / next step: *[Dante / Make Money — fill]*
 
 **Speaker notes:**
-Leave them with the brand line and honest live status: Sepolia escrow + treasury live; custodial sim + seats still open. Offer white paper for fee math and rail detail. Q&A traps: employment-agency regulation (use hire/seat copy; counsel pass #17), “when is money real?” (Sepolia live → filmed smoke → custodial/seats → Base mainnet), “why not higher take-rate?” (seats > fee hike).
+Leave them with the brand line and honest live status: Sepolia escrow + treasury live; custodial sim + seats still open. Offer white paper for fee math and rail detail. Q&A traps: employment-agency regulation (use hire/seat copy; counsel pass #17), “when is money real?” (Sepolia live → filmed smoke → custodial/seats → Base mainnet), “why not higher take-rate?” (seats > fee hike). Also: “who owns unselected submissions?” → **worker property**; review license only; IP rides **paid + seat**, not submit.
 
 ---
 
@@ -173,6 +173,7 @@ Leave them with the brand line and honest live status: Sepolia escrow + treasury
 | Charts | Unit-econ Early stack bar; nested $10k tree one-pager from Genius exhibit |
 | Screenshots | OS fund/lock; `/feed` dollar-free; wallet Connect/Approve/Lock (Sepolia); Basescan escrow |
 | Language ban | Avoid leading with “employee / EoR / staffing agency”; prefer hired into company / seat |
+| IP / unselected work | Losers keep IP; review license only; exclusive assignment only on **paid + hire/seat**. Sponsors ≠ license farm. Q&A trap: “who owns the other entries?” → worker property. |
 | Honesty | Every money slide: “Sepolia live; custodial sim; seats not billed” footnote if needed |
 
 ## Ownership

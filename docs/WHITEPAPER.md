@@ -178,6 +178,8 @@ Sponsors attach to a company or job. They do **not** pick the winner.
 
 **Placement fee:** **500 bps** of financing contribution when that path is live (separate from release fee). Optional upside until financing UX ships — do not block the core loop on sponsors (#14).
 
+**IP bright line:** placement / financing attach does **not** license or assign unselected submissions. Sponsor capital ≠ portfolio of free options on losing entries.
+
 Later income layers (not v1): plugin marketplace take-rate, bot tolls, software sponsors at scale.
 
 ---
@@ -221,6 +223,7 @@ Hybrid is the minimum architecture that (a) proves the purse before work, (b) se
 | **`feeRecipient` custody** | Treasury multisig (or equivalent); never single hot EOA for mainnet fees. |
 | **Public GMV** | Kept private partly to reduce gaming; also reduces surface for misleading “earnings” claims on profiles. |
 | **Naming / trademark** | Domain buys **dropped** for now — stay on Vercel URL; registration ≠ mark clearance. |
+| **Unselected submissions / IP** | **Locked (Dante + room 2026-10-01):** losers keep copyright/code/assets. Escrow buys **one purse → one hire**, not every entry. Submit grants a **non-exclusive, revocable review license** for demo review only. **Exclusive IP assignment only for the paid winner**, via explicit hire/seat terms — never on the submit click, never via the lock tx. Platform does not take ownership of unselected work. Sponsors (#14) buy **capital/placement attach**, not a license farm on losers. No on-chain “paid+hired” (or ownership) attestation for losers; public feed may show participation/demerits only. |
 
 ### Material product risks (non-legal)
 

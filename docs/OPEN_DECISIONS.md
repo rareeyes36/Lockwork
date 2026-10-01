@@ -100,3 +100,10 @@ Once checked, Genius hardens PAYOUT_HYBRID + MONEY_MODEL to “decided” and Ma
 | Both leaves pay under D1 | $175 total | Still $0 on carve transfers |
 
 **Rec:** Lock D1 — protects trust, fee still scales with outward GMV.
+
+## Locked — unselected submission IP (2026-10-01)
+
+**Decision:** Unselected submissions remain the **worker’s property**. Submit = non-exclusive revocable **review license** only. Exclusive assignment **only** for the paid winner via hire/seat terms. Escrow/lock does not buy every entry. Sponsors buy capital/placement attach, not licenses on losers. No loser ownership attestations on-chain.
+
+**Owners:** Make Money (WP/deck/ToS spine) · Crypto Bro (on-chain chapter) · Genius (supply/fee implication)
+

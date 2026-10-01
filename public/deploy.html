@@ -21,7 +21,7 @@
       Lockwork
     </a>
     <h1>Deploy the escrow contract</h1>
-    <p class="muted">One transaction from your own wallet. It deploys <b>LockworkEscrow</b> on the test network with Circle's test USDC. The fee is 2.5% on release, paid to your wallet. Nobody, including you as deployer, can move locked funds except the employer who locked them.</p>
+    <p class="muted">One transaction from your own wallet. It deploys <b>LockworkEscrow</b> on the test network with Circle's test USDC. The fee is 2.5% on release, paid to the Lockwork treasury (feeRecipient), not the deployer wallet. Nobody, including you as deployer, can move locked funds except the employer who locked them.</p>
 
     <div class="card" style="margin-top:18px">
       <div class="card-head"><h3>Before you start</h3><span class="live">testnet · no real money</span></div>
@@ -37,8 +37,9 @@
       <dl class="kv">
         <dt>Chain</dt><dd id="chain">…</dd>
         <dt>USDC</dt><dd id="usdc" class="hash">…</dd>
+        <dt>Fee recipient (treasury)</dt><dd id="feeRec" class="hash">…</dd>
         <dt>Configured escrow</dt><dd id="configured">…</dd>
-        <dt>Your wallet</dt><dd id="acct">not connected</dd>
+        <dt>Your wallet (deployer)</dt><dd id="acct">not connected</dd>
         <dt>Balances</dt><dd id="bal">…</dd>
       </dl>
       <div class="row" style="margin-top:14px">
@@ -66,6 +67,8 @@
     const cfg = (await (await fetch('/api/config')).json()).chain;
     $('chain').textContent = `${cfg.chain_name} (${cfg.chain_id})`;
     $('usdc').textContent = cfg.usdc;
+    $('feeRec').textContent = cfg.fee_recipient || '(missing — set LOCKWORK_FEE_RECIPIENT)';
+    if (!cfg.fee_recipient) showErr('Chain config is missing fee_recipient. Deploy blocked until treasury is set.');
     $('configured').innerHTML = cfg.escrow
       ? `<span class="live">active</span> <span class="hash">${cfg.escrow}</span>`
       : '<span class="muted">none yet (USDC jobs run simulated)</span>';

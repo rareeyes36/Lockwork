@@ -27,13 +27,18 @@ const BASE_SEPOLIA = {
   usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
 };
 
+// Dante treasury — production feeRecipient on deploy (override with LOCKWORK_FEE_RECIPIENT).
+const DEFAULT_FEE_RECIPIENT = '0x47D0A167FF6A5508440ef6D8902076A7aaD0844C';
+
 function config() {
   const escrow = process.env.LOCKWORK_ESCROW_ADDRESS || '';
   const chainId = Number(process.env.LOCKWORK_CHAIN_ID || BASE_SEPOLIA.id);
   const isBaseSepolia = chainId === BASE_SEPOLIA.id;
+  const feeRaw = process.env.LOCKWORK_FEE_RECIPIENT || DEFAULT_FEE_RECIPIENT;
   return {
     enabled: isAddress(escrow),
     escrow: isAddress(escrow) ? getAddress(escrow) : null,
+    fee_recipient: isAddress(feeRaw) ? getAddress(feeRaw) : null,
     usdc: process.env.LOCKWORK_USDC_ADDRESS || BASE_SEPOLIA.usdc,
     chain_id: chainId,
     chain_name: process.env.LOCKWORK_CHAIN_NAME || (isBaseSepolia ? BASE_SEPOLIA.name : `Chain ${chainId}`),

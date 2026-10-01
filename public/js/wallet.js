@@ -128,11 +128,13 @@ export async function refund(ctx, cfg, { jobId }) {
   }
 }
 
-/** Deploy LockworkEscrow(usdc, feeRecipient = connected wallet, 250 bps). */
+/** Deploy LockworkEscrow(usdc, feeRecipient = cfg.fee_recipient, 250 bps). */
 export async function deployEscrow(ctx, cfg) {
   const { abi, bytecode } = await escrowArtifact();
-  const hash = await ctx.wallet.deployContract({ account: ctx.account, abi, bytecode, args: [cfg.usdc, ctx.account, 250] });
+  if (!cfg.fee_recipient) throw new Error('Missing fee_recipient in chain config (set LOCKWORK_FEE_RECIPIENT).');
+  const feeRecipient = getAddress(cfg.fee_recipient);
+  const hash = await ctx.wallet.deployContract({ account: ctx.account, abi, bytecode, args: [cfg.usdc, feeRecipient, 250] });
   const receipt = await ctx.pub.waitForTransactionReceipt({ hash, timeout: 180_000 });
   if (receipt.status !== 'success' || !receipt.contractAddress) throw new Error(`Deploy transaction ${hash} failed.`);
-  return { hash, address: getAddress(receipt.contractAddress) };
+  return { hash, address: getAddress(receipt.contractAddress), feeRecipient };
 }

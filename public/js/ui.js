@@ -50,7 +50,7 @@ export function ago(d) {
   return fut ? `in ${v}` : `${v} ago`;
 }
 
-const HUES = ['#f2b84b', '#3dd68c', '#4f8cff', '#a78bfa', '#38d0e0', '#ff8f6b', '#f472b6', '#c3e36b'];
+const HUES = ['#0B1F3A', '#1B4F8A', '#334155', '#0D7A4F', '#475569', '#15355C', '#0E7490', '#64748B'];
 function hue(key) {
   let h = 0;
   for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
@@ -131,11 +131,10 @@ export const ic = (name, size) => raw(icon(name, size));
 /** Brand mark: padlock; the gear tooth only as secondary texture on the shackle. */
 export function logo(size = 28) {
   return raw(`<svg viewBox="0 0 32 32" width="${size}" height="${size}" aria-hidden="true">
-    <defs><linearGradient id="lwg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#f2b84b"/></linearGradient></defs>
-    <path d="M10 14V10.5a6 6 0 0 1 12 0V14" fill="none" stroke="url(#lwg)" stroke-width="3" stroke-linecap="round"/>
-    <path d="M15 3.4h2v2.2h-2z" fill="#f2b84b" opacity=".55"/>
-    <rect x="5.5" y="13" width="21" height="16" rx="4.5" fill="url(#lwg)"/>
-    <circle cx="16" cy="20" r="2.4" fill="#1d1404"/><rect x="15" y="21" width="2" height="4.2" rx="1" fill="#1d1404"/>
+    <path d="M10 14V10.5a6 6 0 0 1 12 0V14" fill="none" stroke="#0B1F3A" stroke-width="3" stroke-linecap="round"/>
+    <path d="M15 3.4h2v2.2h-2z" fill="#0B1F3A" opacity=".45"/>
+    <rect x="5.5" y="13" width="21" height="16" rx="4.5" fill="#0B1F3A"/>
+    <circle cx="16" cy="20" r="2.4" fill="#ffffff"/><rect x="15" y="21" width="2" height="4.2" rx="1" fill="#ffffff"/>
   </svg>`);
 }
 

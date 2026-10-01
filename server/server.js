@@ -9,6 +9,14 @@ const PORT = Number(process.env.PORT || 3847);
 
 const app = express();
 app.use(express.json());
+
+const feedRoutes = require('./routes/feed');
+
+// Public social shell pages (Excel-grid). /feed also works via static+extensions;
+// /u/:handle needs an explicit route.
+app.get('/feed', feedRoutes.sendFeedPage);
+app.get('/u/:handle', feedRoutes.sendProfilePage);
+
 // On Vercel the CDN serves public/ and this line is ignored; locally and on Render it serves the SPA.
 app.use(express.static(path.join(__dirname, '..', 'public'), { extensions: ['html'] }));
 
@@ -18,6 +26,7 @@ app.use('/api', require('./routes/jobs'));
 app.use('/api', require('./routes/org'));
 app.use('/api', require('./routes/market'));
 app.use('/api', require('./routes/meta'));
+app.use('/api', feedRoutes.router);
 
 app.use('/api', (_req, res) => res.status(404).json({ error: 'not found' }));
 app.use(errorHandler);

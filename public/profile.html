@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lockwork — Profile</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/grid.css" />
+</head>
+<body>
+  <nav class="os-nav">
+    <a href="/">Operating OS</a>
+    <a href="/feed">Feed</a>
+    <a href="#" id="nav-profile" class="active">Profile</a>
+  </nav>
+  <div class="shell">
+    <h1>PROFILE</h1>
+    <p class="sub">Public card · jobs completed + demerits · never escrow amounts</p>
+    <div id="profile"></div>
+  </div>
+  <script>
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+    function handleFromPath() {
+      const m = location.pathname.match(/^\/u\/([^/]+)\/?$/);
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+    async function load() {
+      const handle = handleFromPath();
+      const el = document.getElementById('profile');
+      const nav = document.getElementById('nav-profile');
+      if (!handle) {
+        el.innerHTML = '<div class="empty-state err">Missing handle in URL</div>';
+        return;
+      }
+      nav.textContent = '@' + handle;
+      nav.href = '/u/' + encodeURIComponent(handle);
+      document.title = 'Lockwork — @' + handle;
+      try {
+        const r = await fetch('/api/profiles/' + encodeURIComponent(handle));
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || r.statusText);
+        el.innerHTML = `<div class="profile-sheet">
+          <div class="cell label">Handle</div>
+          <div class="cell mono">@${esc(data.handle)}</div>
+          <div class="cell label">Display name</div>
+          <div class="cell">${esc(data.display_name)}</div>
+          <div class="cell label">Jobs completed</div>
+          <div class="cell">${esc(data.jobs_completed)}</div>
+          <div class="cell label">Jobs paid out</div>
+          <div class="cell">${esc(data.jobs_paid_out_count)}</div>
+          <div class="cell label">Demerit count</div>
+          <div class="cell">${esc(data.demerit_count)}</div>
+        </div>
+        <p class="sub" style="margin-top:10px">
+          <a href="/feed">← Feed</a>
+        </p>`;
+      } catch (e) {
+        el.innerHTML = `<div class="empty-state err">${esc(e.message)}</div>`;
+      }
+    }
+    load();
+  </script>
+</body>
+</html>

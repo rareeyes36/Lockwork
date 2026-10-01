@@ -18,6 +18,7 @@ export default async function landing() {
       <a href="#fees" data-scroll>Fees</a>
       <a href="#rails" data-scroll>Rails</a>
       <a href="#roadmap" data-scroll>Roadmap</a>
+      <a href="/feed">Feed</a>
       <a class="btn primary" href="#/app">Open the live demo ${ic('arrow')}</a>
     </div>
   </nav>

@@ -209,6 +209,7 @@ function shellHtml(ctx, active) {
       <div class="side-foot">
         <button class="btn sm" data-act="new-company">${ic('plus')} New company</button>
         ${ctx.config.demo_reset ? html`<button class="btn sm ghost" data-act="reset">${ic('reset')} Reset demo data</button>` : ''}
+        <a class="small muted" href="/feed" style="padding:4px 2px">Public feed</a>
         <a class="small muted" href="#/" style="padding:4px 2px">← Back to site</a>
       </div>
     </aside>

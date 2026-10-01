@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lockwork — Feed</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/grid.css" />
+</head>
+<body>
+  <nav class="os-nav">
+    <a href="/">Operating OS</a>
+    <a href="/feed" class="active">Feed</a>
+  </nav>
+  <div class="shell">
+    <h1>FEED</h1>
+    <p class="sub">Public activity cards · amounts hidden · Excel-grid layout</p>
+    <div class="toolbar">
+      <button type="button" id="refresh">Refresh</button>
+      <button type="button" id="seed">Seed demo feed</button>
+      <span id="status" class="mono"></span>
+    </div>
+    <div id="feed" class="feed-grid"></div>
+  </div>
+  <script>
+    const feedEl = document.getElementById('feed');
+    const statusEl = document.getElementById('status');
+    const KIND_BADGE = {
+      job_funded: 'funded',
+      submission: 'submission',
+      paid_hired: 'hired',
+      demerit: 'demerit',
+      company_pulse: 'pulse'
+    };
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+    function cardHtml(ev) {
+      const p = ev.payload || {};
+      const badge = KIND_BADGE[ev.kind] || '';
+      const title = p.title || p.job_title || '—';
+      const actor = ev.actor_handle || p.actor_handle || '—';
+      const company = ev.company_name || p.company_name || '—';
+      const note = p.badge || p.note || p.status || ev.kind.replace(/_/g, ' ');
+      const when = ev.created_at ? new Date(ev.created_at).toLocaleString() : '';
+      const actorLink = ev.actor_handle
+        ? `<a href="/u/${esc(ev.actor_handle)}">@${esc(ev.actor_handle)}</a>`
+        : esc(actor);
+      return `<article class="grid-card" data-kind="${esc(ev.kind)}">
+        <div class="cell label">Kind</div>
+        <div class="cell kind">${esc(ev.kind)}</div>
+        <div class="cell label">Badge</div>
+        <div class="cell"><span class="badge ${badge}">${esc(note)}</span></div>
+        <div class="cell label">Title</div>
+        <div class="cell">${esc(title)}</div>
+        <div class="cell label">Company</div>
+        <div class="cell">${esc(company)}</div>
+        <div class="cell label">Actor</div>
+        <div class="cell">${actorLink}</div>
+        <div class="cell label">When</div>
+        <div class="cell mono">${esc(when)}</div>
+      </article>`;
+    }
+    function emptyHtml() {
+      return `<div class="empty-state">
+        <p>No feed events yet.</p>
+        <p>Click <strong>Seed demo feed</strong> to insert safe non-money sample cards from existing jobs and people.</p>
+      </div>`;
+    }
+    async function load() {
+      statusEl.textContent = 'loading…';
+      try {
+        const r = await fetch('/api/feed');
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || r.statusText);
+        const events = data.events || data || [];
+        if (!events.length) {
+          feedEl.innerHTML = emptyHtml();
+          statusEl.textContent = '0 events';
+          return;
+        }
+        feedEl.innerHTML = events.map(cardHtml).join('');
+        statusEl.textContent = events.length + ' events';
+      } catch (e) {
+        feedEl.innerHTML = `<div class="empty-state err">${esc(e.message)}</div>`;
+        statusEl.textContent = 'error';
+      }
+    }
+    document.getElementById('refresh').onclick = load;
+    document.getElementById('seed').onclick = async () => {
+      statusEl.textContent = 'seeding…';
+      try {
+        const r = await fetch('/api/feed/seed', { method: 'POST' });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || r.statusText);
+        statusEl.textContent = 'seeded ' + (data.inserted || 0);
+        await load();
+      } catch (e) {
+        statusEl.textContent = String(e);
+        statusEl.className = 'mono err';
+      }
+    };
+    load();
+  </script>
+</body>
+</html>

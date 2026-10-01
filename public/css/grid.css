@@ -1,0 +1,155 @@
+/* Lockwork Excel-grid shell — dense, flat, spreadsheet-like */
+:root {
+  --ink: #111;
+  --muted: #555;
+  --line: #c8c8c8;
+  --header: #e8e8e8;
+  --zebra: #f7f7f7;
+  --cell: #fff;
+  --accent: #1a1a1a;
+  --ok: #0a7;
+  --warn: #a60;
+  font-family: "Segoe UI", system-ui, "Helvetica Neue", sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.35;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0;
+  background: #f0f0f0;
+}
+.os-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--header);
+  font-size: 12px;
+}
+.os-nav a {
+  padding: 6px 14px;
+  text-decoration: none;
+  color: var(--ink);
+  border-right: 1px solid var(--line);
+}
+.os-nav a:hover { background: #ddd; }
+.os-nav a.active { background: #fff; font-weight: 600; border-bottom: 2px solid var(--ink); }
+.shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 12px 10px 32px;
+}
+h1 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 8px 0 4px;
+  letter-spacing: 0.02em;
+}
+.sub {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+.toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+button, .btn {
+  font: inherit;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  background: #eee;
+  cursor: pointer;
+  color: var(--ink);
+}
+button:hover, .btn:hover { background: #ddd; }
+button:disabled { opacity: 0.5; cursor: default; }
+.feed-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.grid-card {
+  border: 1px solid var(--line);
+  background: var(--cell);
+  display: grid;
+  grid-template-columns: 110px 1fr 140px 120px;
+  grid-auto-rows: minmax(22px, auto);
+  font-size: 12px;
+}
+.grid-card .cell {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 4px 8px;
+  min-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grid-card .cell:nth-child(4n) { border-right: none; }
+.grid-card .label {
+  background: var(--header);
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.grid-card .kind {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+.grid-card a { color: var(--ink); }
+.badge {
+  display: inline-block;
+  border: 1px solid var(--line);
+  padding: 1px 6px;
+  background: var(--zebra);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.badge.funded { background: #e6f4ea; border-color: #8c8; }
+.badge.hired { background: #e8eef8; border-color: #88a; }
+.badge.demerit { background: #f8e8e8; border-color: #c88; }
+.badge.pulse { background: #f8f0e0; border-color: #ca8; }
+.badge.submission { background: #f0f0f0; }
+.empty-state {
+  border: 1px dashed var(--line);
+  padding: 24px;
+  text-align: center;
+  background: var(--cell);
+  color: var(--muted);
+}
+.profile-sheet {
+  border: 1px solid var(--line);
+  background: var(--cell);
+  display: grid;
+  grid-template-columns: 160px 1fr;
+}
+.profile-sheet .cell {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 6px 10px;
+}
+.profile-sheet .cell:nth-child(2n) { border-right: none; }
+.profile-sheet .label {
+  background: var(--header);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.err { color: #c22; }
+.ok { color: var(--ok); }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; }
+@media (max-width: 640px) {
+  .grid-card { grid-template-columns: 1fr 1fr; }
+  .grid-card .cell:nth-child(2n) { border-right: none; }
+  .grid-card .cell:nth-child(4n) { border-right: 1px solid var(--line); }
+  .grid-card .cell:nth-child(2n) { border-right: none; }
+}

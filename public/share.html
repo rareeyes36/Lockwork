@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lockwork — One-pager</title>
+  <meta name="description" content="Lockwork one-pager: contest-to-hire clearinghouse. Pitch, white paper, and live demo links.">
+  <meta name="theme-color" content="#0B1F3A">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --bg:#f4f6f9; --panel:#fff; --line:#d0d5de; --text:#0b1f3a; --text-2:#334155; --muted:#64748b;
+  --navy:#0b1f3a; --link:#1b4f8a; --green:#0d7a4f; --green-soft:rgba(13,122,79,.1);
+  --font:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; --radius:4px;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 var(--font)}
+a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+.doc-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 20px;background:var(--navy);color:#fff}
+.doc-top a{color:#cbd5e1;font-size:.82rem;font-weight:600} .doc-top a:hover{color:#fff;text-decoration:none}
+.doc-top .brand{color:#fff;font-weight:800;display:inline-flex;gap:8px;align-items:center}
+.doc-top .links{display:flex;gap:14px;flex-wrap:wrap}
+.wrap{max-width:720px;margin:0 auto;padding:28px 20px 64px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 2px rgba(11,31,58,.06)}
+h1{margin:0 0 6px;font-size:1.75rem;font-weight:850;letter-spacing:-.02em}
+.tag{color:var(--muted);margin:0 0 14px;font-size:.95rem}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.badge{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:#eef1f6;color:var(--text-2)}
+.badge.live{background:var(--green-soft);color:var(--green);border-color:rgba(13,122,79,.25)}
+h2{font-size:1rem;font-weight:800;margin:1.4em 0 .5em;color:var(--navy);border-bottom:1px solid var(--line);padding-bottom:4px}
+p,li{color:var(--text-2)} ul{padding-left:1.2em;margin:.4em 0}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:.6em 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--navy);color:#fff} tr:nth-child(even) td{background:#eef1f6}
+.mono{font-family:var(--mono);font-size:.78rem;word-break:break-all}
+.foot{margin-top:22px;color:var(--muted);font-size:.8rem}
+  </style>
+</head>
+<body>
+<header class="doc-top">
+  <a class="brand" href="/">Lockwork</a>
+  <div class="links">
+    <a href="/share">Share</a>
+    <a href="/pitch">Pitch</a>
+    <a href="/whitepaper">White paper</a>
+    <a href="/package">Package</a>
+    <a href="/">Demo</a>
+  </div>
+</header>
+<main class="wrap">
+  <article class="card">
+    <h1>Lockwork</h1>
+    <p class="tag"><strong>Lock the payout. Ship the work. Hire the winner.</strong></p>
+    <p>Contest-to-hire clearinghouse: lock a sealed purse → compete by shipping the work → <strong>one winner paid and hired</strong> onto a company seat. Not hours. Not unpaid contests.</p>
+    <div class="badges">
+      <span class="badge live">Base Sepolia escrow live</span>
+      <span class="badge">250 bps release fee</span>
+      <span class="badge">$79 seats · 500 bps sponsors</span>
+    </div>
+
+    <h2>How money moves</h2>
+    <table>
+      <tr><th>Knob</th><th>Rule</th></tr>
+      <tr><td>Platform fee</td><td><strong>2.5%</strong> only when payout releases to the winner</td></tr>
+      <tr><td>Company seat</td><td><strong>$79/mo</strong> after hire (contest CAC → ARR)</td></tr>
+      <tr><td>Sponsors</td><td><strong>5%</strong> on the sponsor slice — capital attach, not a license farm</td></tr>
+      <tr><td>IP</td><td>Losers keep their work; assignment on <strong>paid + seat</strong> only</td></tr>
+    </table>
+
+    <h2>Links to share</h2>
+    <ul>
+      <li><a href="https://lockwork-dun.vercel.app/">Live demo</a></li>
+      <li><a href="https://lockwork-dun.vercel.app/pitch">Pitch deck</a></li>
+      <li><a href="https://lockwork-dun.vercel.app/whitepaper">White paper</a></li>
+      <li><a href="https://lockwork-dun.vercel.app/package">Full package index</a></li>
+      <li><a href="https://lockwork-dun.vercel.app/feed">Public feed</a> (reputation only — no dollar amounts)</li>
+    </ul>
+
+    <h2>On-chain (testnet)</h2>
+    <p>Escrow: <a class="mono" href="https://sepolia.basescan.org/address/0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722" target="_blank" rel="noopener">0xa24D580f255F00Aa8AEd0fb60526bE549aBDC722</a><br>
+    Treasury fee recipient: <span class="mono">0x47D0A167FF6A5508440ef6D8902076A7aaD0844C</span></p>
+
+    <p class="foot">Custodial rail still simulated · Stripe not live yet · Site on Vercel · Dante Final / Lockwork</p>
+  </article>
+</main>
+</body>
+</html>
